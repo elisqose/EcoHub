@@ -17,5 +17,6 @@ public class Support {
     private User user;
 
     @ManyToOne
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Post post;
 }

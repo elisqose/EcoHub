@@ -26,6 +26,7 @@ public class User {
     private UserRole role;
 
     @OneToMany(mappedBy = "receiver")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Message> receivedMessages;
 
     @ManyToMany

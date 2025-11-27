@@ -19,6 +19,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private User author;
 
     @ManyToOne
