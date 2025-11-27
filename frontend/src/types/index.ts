@@ -1,19 +1,13 @@
-// Definizione dell'Utente
+// Definisce l'Utente
 export interface User {
     id: number;
     username: string;
-    email?: string;
-    bio?: string;
+    email: string;
     role: 'STANDARD' | 'MODERATOR';
+    bio?: string;
 }
 
-// Definizione del Tag
-export interface Tag {
-    id: number;
-    name: string;
-}
-
-// Definizione del Post
+// Definisce un Post
 export interface Post {
     id: number;
     title: string;
@@ -23,13 +17,21 @@ export interface Post {
     status: 'PENDING' | 'APPROVED' | 'REQUIRES_CHANGES' | 'REJECTED';
     moderatorNote?: string;
     author: User;
+    comments: Comment[];
     tags: Tag[];
+    // Per semplicità nel frontend, i like li gestiamo come numero o booleano se serve
 }
 
-// Definizione del Commento
+// Definisce un Commento
 export interface Comment {
     id: number;
     text: string;
     creationDate: string;
     author: User;
+}
+
+// Definisce un Tag
+export interface Tag {
+    id: number;
+    name: string;
 }
