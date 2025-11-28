@@ -4,26 +4,19 @@ import { api } from '../services/api';
 import type { User } from '../types';
 
 export default function LoginPage() {
-    // Stati per gestire i campi del form e gli errori
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    
-    // Hook per la navigazione
     const navigate = useNavigate();
 
     const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault(); // Evita che la pagina si ricarichi
-        setError(''); // Pulisce eventuali errori precedenti
+        e.preventDefault();
+        setError('');
         
         try {
-            // 1. Chiamata al Back-End
             const user: User = await api.login(username, password);
-            
-            // 2. Salvataggio dati utente nel browser (Local Storage)
             localStorage.setItem('user', JSON.stringify(user));
-            
-            // 3. Reindirizzamento alla pagina principale (Feed)
             navigate('/feed');
         } catch (err) {
             console.error("Errore di login:", err);

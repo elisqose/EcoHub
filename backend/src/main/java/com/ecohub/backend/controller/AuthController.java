@@ -10,7 +10,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*") // Permette chiamate da React
+@CrossOrigin(origins = "*")
+
 public class AuthController {
     @Autowired
     private UserService userService;
@@ -26,7 +27,12 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody User user) {
-        return ResponseEntity.ok(userService.register(user));
+    public ResponseEntity<?> register(@RequestBody User user) {
+        try {
+            User newUser = userService.register(user);
+            return ResponseEntity.ok(newUser);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

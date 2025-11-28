@@ -11,8 +11,7 @@ import java.util.List;
 
 @Service
 public class ContentService {
-    @Autowired
-    private PostRepository postRepository;
+    @Autowired private PostRepository postRepository;
     @Autowired private TagRepository tagRepository;
     @Autowired private CommentRepository commentRepository;
     @Autowired private SupportRepository supportRepository;

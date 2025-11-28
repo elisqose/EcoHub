@@ -1,4 +1,3 @@
-// Definisce l'Utente
 export interface User {
     id: number;
     username: string;
@@ -7,7 +6,6 @@ export interface User {
     bio?: string;
 }
 
-// Definisce un Post
 export interface Post {
     id: number;
     title: string;
@@ -19,10 +17,8 @@ export interface Post {
     author: User;
     comments: Comment[];
     tags: Tag[];
-    // Per semplicità nel frontend, i like li gestiamo come numero o booleano se serve
 }
 
-// Definisce un Commento
 export interface Comment {
     id: number;
     text: string;
@@ -30,7 +26,6 @@ export interface Comment {
     author: User;
 }
 
-// Definisce un Tag
 export interface Tag {
     id: number;
     name: string;

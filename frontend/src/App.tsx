@@ -1,42 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-
-// --- 1. DEFINIZIONE DEI TIPI (Types) ---
-
-export interface User {
-    id: number;
-    username: string;
-    email: string;
-    role: 'STANDARD' | 'MODERATOR';
-    bio?: string;
-}
-
-export interface Post {
-    id: number;
-    title: string;
-    content: string;
-    imageUrl?: string;
-    creationDate: string;
-    status: 'PENDING' | 'APPROVED' | 'REQUIRES_CHANGES' | 'REJECTED';
-    moderatorNote?: string;
-    author: User;
-    comments: Comment[];
-    tags: Tag[];
-}
-
-export interface Comment {
-    id: number;
-    text: string;
-    creationDate: string;
-    author: User;
-}
-
-export interface Tag {
-    id: number;
-    name: string;
-}
-
-// --- 2. SERVIZIO API (Service) ---
+import type { User } from './types';
 
 const API_URL = 'http://localhost:8080/api';
 
@@ -59,7 +23,7 @@ async function request(endpoint: string, options?: RequestInit) {
 
 const api = {
     // AUTENTICAZIONE
-    login: (username: string, password: string) => 
+    login: (username: string, password: string) =>
         request('/auth/login', {
             method: 'POST',
             body: JSON.stringify({ username, password })
@@ -100,8 +64,7 @@ function LoginPage() {
         try {
             const user: User = await api.login(username, password);
             localStorage.setItem('user', JSON.stringify(user));
-            // alert('Login effettuato! Ciao ' + user.username);
-            navigate('/feed'); 
+            navigate('/feed');
         } catch (err) {
             console.error(err);
             setError('Credenziali sbagliate o server non raggiungibile!');

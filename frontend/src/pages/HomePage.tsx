@@ -4,11 +4,11 @@ export default function HomePage() {
     const navigate = useNavigate();
 
     // Recuperiamo l'utente salvato (se c'è)
-    const userJson = localStorage.getItem('ecohub_user');
+    const userJson = localStorage.getItem('user');
     const user = userJson ? JSON.parse(userJson) : null;
 
     const handleLogout = () => {
-        localStorage.removeItem('ecohub_user');
+        localStorage.removeItem('user');
         navigate('/login');
     };
 

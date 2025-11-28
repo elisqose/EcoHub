@@ -27,11 +27,14 @@ public class ModerationService {
     public void requestChanges(Long postId, String note) {
         Post post = postRepository.findById(postId).orElseThrow();
         post.setStatus(PostStatus.REQUIRES_CHANGES);
-        post.setModeratorNote(note); // Aggiunge la nota per l'autore
+        post.setModeratorNote(note);
         postRepository.save(post);
     }
 
     public void rejectPost(Long postId) {
-        postRepository.deleteById(postId);
+        Post post = postRepository.findById(postId).orElseThrow();
+        post.setStatus(PostStatus.REJECTED);
+        post.setModeratorNote("Il contenuto viola le linee guida della community.");
+        postRepository.save(post);
     }
 }

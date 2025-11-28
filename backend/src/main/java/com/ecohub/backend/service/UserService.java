@@ -13,7 +13,9 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
-    @Autowired private MessageRepository messageRepository;
+
+    @Autowired
+    private MessageRepository messageRepository;
 
     public User login(String username, String password) {
         return userRepository.findByUsernameAndPassword(username, password)
@@ -21,7 +23,10 @@ public class UserService {
     }
 
     public User register(User user) {
-        user.setRole(UserRole.STANDARD); // Default role
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new RuntimeException("Username già utilizzato! Scegline un altro.");
+        }
+        user.setRole(UserRole.STANDARD);
         return userRepository.save(user);
     }
 

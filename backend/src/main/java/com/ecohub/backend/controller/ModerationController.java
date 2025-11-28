@@ -10,6 +10,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/moderation")
 @CrossOrigin(origins = "*")
+
 public class ModerationController {
     @Autowired private ModerationService moderationService;
 
