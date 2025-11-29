@@ -5,47 +5,65 @@ async function request(endpoint: string, options?: RequestInit) {
     const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers: {
-            'Content-Type': 'application/json',
-            ...options?.headers,
+            'Content-Type': 'application/json', // Default
+            ...options?.headers, // Qui avviene la sovrascrittura se passi headers specifici
         },
     });
 
     if (!response.ok) {
-        // Gestione errori semplice
         throw new Error(`Errore API: ${response.statusText}`);
     }
 
-    // Se la risposta è vuota (es. dopo un like), non provare a parsare JSON
     const text = await response.text();
     return text ? JSON.parse(text) : {};
 }
 
 export const api = {
-    // AUTENTICAZIONE
-    login: (username: string, password: string) => 
+    // --- AUTENTICAZIONE ---
+    login: (username: string, password: string) =>
         request('/auth/login', {
             method: 'POST',
             body: JSON.stringify({ username, password })
         }),
 
-    register: (user: any) => 
+    register: (user: any) =>
         request('/auth/register', {
             method: 'POST',
             body: JSON.stringify(user)
         }),
 
-    // POSTS
+    // --- POSTS ---
     getFeed: () => request('/posts'),
-    
-    createPost: (post: any, userId: number, tags: string[]) => 
+
+    getPostsByTag: (tagName: string) => request(`/posts?tag=${tagName}`),
+
+    createPost: (post: any, userId: number, tags: string[]) =>
         request(`/posts?userId=${userId}&tags=${tags.join(',')}`, {
             method: 'POST',
             body: JSON.stringify(post)
         }),
 
-    // UTENTI
-    follow: (followerId: number, followedId: number) => 
+    // QUESTA È LA VERSIONE CORRETTA E UNIFICATA
+    addComment: (postId: number, userId: number, text: string) =>
+        request(`/posts/${postId}/comments?userId=${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain' // <--- Sovrascriviamo il tipo per mandare testo puro
+            },
+            body: text // Non usiamo JSON.stringify perché il backend vuole una String pura
+        }),
+
+    // --- UTENTI & INTERAZIONI ---
+    follow: (followerId: number, followedId: number) =>
         request(`/users/${followedId}/follow?followerId=${followerId}`, {
             method: 'POST'
-        })
+        }),
+
+    supportPost: (postId: number, userId: number) =>
+        request(`/posts/${postId}/support?userId=${userId}`, {
+            method: 'POST'
+        }),
+
+    // --- TAGS ---
+    getTags: () => request('/tags')
 };

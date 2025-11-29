@@ -40,6 +40,10 @@ public class ContentService {
         return postRepository.findById(id).orElseThrow();
     }
 
+    public List<Post> getPostsByTag(String tagName) {
+        return postRepository.findByTags_NameAndStatus(tagName, PostStatus.APPROVED);
+    }
+
     public Comment addComment(Long postId, Long userId, String text) {
         Post post = postRepository.findById(postId).orElseThrow();
         User user = userRepository.findById(userId).orElseThrow();

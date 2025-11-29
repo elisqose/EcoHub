@@ -18,7 +18,11 @@ public class PostController {
     private ContentService contentService;
 
     @GetMapping
-    public List<Post> getFeed() {
+    public List<Post> getFeed(@RequestParam(required = false) String tag) {
+        if (tag != null && !tag.isEmpty()) {
+            // Chiama il service filtrando per tag
+            return contentService.getPostsByTag(tag);
+        }
         return contentService.getPublicFeed();
     }
 
