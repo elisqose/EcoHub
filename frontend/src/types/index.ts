@@ -39,3 +39,11 @@ export interface Post {
     // 2. Aggiungi questa riga fondamentale!
     supports: Support[];
 }
+
+export interface Message {
+    id: number;
+    content: string;
+    timestamp: string;
+    sender: User;   // Il backend restituisce l'intero oggetto User
+    receiver: User; // Il backend restituisce l'intero oggetto User
+}

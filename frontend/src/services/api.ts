@@ -34,9 +34,7 @@ export const api = {
     // POSTS
     getFeed: () => request('/posts'),
 
-    // --- QUESTA È LA FUNZIONE CHE TI MANCAVA ---
     getUserPosts: (userId: number) => request(`/posts/user/${userId}`),
-    // -------------------------------------------
 
     createPost: (post: any, userId: number, tags: string[]) =>
         request(`/posts?userId=${userId}&tags=${tags.join(',')}`, {
@@ -59,6 +57,16 @@ export const api = {
         await fetch(`${API_URL}/posts/${postId}/support?userId=${userId}`, { method: 'POST' });
         return true;
     },
+
+    // MESSAGGI (NUOVA SEZIONE AGGIUNTA)
+    getReceivedMessages: (userId: number) =>
+        request(`/messages/received/${userId}`),
+
+    sendMessage: (senderId: number, receiverId: number, content: string) =>
+        request('/messages/send', {
+            method: 'POST',
+            body: JSON.stringify({ senderId, receiverId, content })
+        }),
 
     // UTENTI
     getUserProfile: (id: number) => request(`/users/${id}`),
