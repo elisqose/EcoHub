@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api'; // <--- MODIFICA QUI: Importiamo l'oggetto api
 import type { Message } from '../types';
-import '../index.css';
 
 const MessagesPage: React.FC = () => {
     // STATO
