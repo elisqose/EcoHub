@@ -1,6 +1,7 @@
 package com.ecohub.backend.controller;
 
 import com.ecohub.backend.model.Message;
+import com.ecohub.backend.model.User;
 import com.ecohub.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,5 +29,10 @@ public class UserController {
     @GetMapping("/{id}/messages")
     public List<Message> getMessages(@PathVariable Long id) {
         return userService.getInbox(id);
+    }
+
+    @GetMapping("/{id}")
+    public User getUserProfile(@PathVariable Long id) {
+        return userService.getUserById(id);
     }
 }

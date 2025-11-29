@@ -12,9 +12,11 @@ export default function HomePage() {
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // Recuperiamo l'utente salvato
-    const userString = localStorage.getItem('user');
-    const user: User | null = userString ? JSON.parse(userString) : null;
+    // CORREZIONE LOOP: Inizializziamo lo stato leggendo il localStorage una volta sola
+    const [user] = useState<User | null>(() => {
+        const stored = localStorage.getItem('user');
+        return stored ? JSON.parse(stored) : null;
+    });
 
     useEffect(() => {
         // Se non c'è utente, rimanda al login
@@ -22,14 +24,16 @@ export default function HomePage() {
             navigate('/login');
             return;
         }
+
         fetchPosts();
-    }, [user, navigate, selectedTag]); // Ricarica se cambia l'utente o il tag selezionato
+
+        // CORREZIONE LOOP: Rimosso 'user' dalle dipendenze perché ora è stabile
+        // Ricarichiamo solo se cambia il tag selezionato
+    }, [selectedTag, navigate]);
 
     const fetchPosts = async () => {
         setLoading(true);
         try {
-            // Nota: Se hai implementato il filtro backend usa api.getPostsByTag(selectedTag)
-            // Altrimenti, prendiamo tutto il feed e filtriamo qui nel client (più facile per ora)
             const allPosts = await api.getFeed();
 
             if (selectedTag) {
@@ -52,23 +56,20 @@ export default function HomePage() {
             <Navbar user={user} />
 
             <div style={{ maxWidth: '700px', margin: '0 auto', padding: '20px' }}>
-                {/* Intestazione di Benvenuto */}
                 <div style={{ marginBottom: '20px' }}>
                     <h1 style={{ color: '#2e7d32', marginBottom: '5px' }}>Ciao, {user.username}! 👋</h1>
                     <p style={{ color: '#666' }}>Ecco cosa succede nella community EcoHub oggi.</p>
                 </div>
 
-                {/* Barra Filtri (Componente Fratello) */}
                 <FilterBar selectedTag={selectedTag} onSelectTag={setSelectedTag} />
 
-                {/* Lista Post */}
                 <div style={{ marginTop: '20px' }}>
                     {loading ? (
                         <p style={{textAlign: 'center', color: '#888'}}>Caricamento feed in corso...</p>
                     ) : posts.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '40px', color: '#666', backgroundColor: 'white', borderRadius: '8px' }}>
                             <h3>Nessun post trovato 🌱</h3>
-                            <p>Non ci sono ancora post con questo tag. Sii il primo a scriverne uno!</p>
+                            <p>Non ci sono ancora post. Sii il primo a scriverne uno!</p>
                         </div>
                     ) : (
                         posts.map(post => (

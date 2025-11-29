@@ -1,12 +1,11 @@
 const API_URL = 'http://localhost:8080/api';
 
-// Funzione generica per le chiamate
 async function request(endpoint: string, options?: RequestInit) {
     const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers: {
-            'Content-Type': 'application/json', // Default
-            ...options?.headers, // Qui avviene la sovrascrittura se passi headers specifici
+            'Content-Type': 'application/json',
+            ...options?.headers,
         },
     });
 
@@ -19,7 +18,7 @@ async function request(endpoint: string, options?: RequestInit) {
 }
 
 export const api = {
-    // --- AUTENTICAZIONE ---
+    // AUTENTICAZIONE
     login: (username: string, password: string) =>
         request('/auth/login', {
             method: 'POST',
@@ -32,10 +31,12 @@ export const api = {
             body: JSON.stringify(user)
         }),
 
-    // --- POSTS ---
+    // POSTS
     getFeed: () => request('/posts'),
 
-    getPostsByTag: (tagName: string) => request(`/posts?tag=${tagName}`),
+    // --- QUESTA È LA FUNZIONE CHE TI MANCAVA ---
+    getUserPosts: (userId: number) => request(`/posts/user/${userId}`),
+    // -------------------------------------------
 
     createPost: (post: any, userId: number, tags: string[]) =>
         request(`/posts?userId=${userId}&tags=${tags.join(',')}`, {
@@ -43,35 +44,30 @@ export const api = {
             body: JSON.stringify(post)
         }),
 
-    // QUESTA È LA VERSIONE CORRETTA E UNIFICATA
-    addComment: (postId: number, userId: number, text: string) =>
-        request(`/posts/${postId}/comments?userId=${userId}`, {
+    // COMMENTI & SUPPORT
+    addComment: async (postId: number, userId: number, text: string) => {
+        const response = await fetch(`${API_URL}/posts/${postId}/comments?userId=${userId}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain' // <--- Sovrascriviamo il tipo per mandare testo puro
-            },
-            body: text // Non usiamo JSON.stringify perché il backend vuole una String pura
-        }),
+            headers: { 'Content-Type': 'text/plain' },
+            body: text
+        });
+        if (!response.ok) throw new Error('Errore commento');
+        return response.json();
+    },
 
-    // --- UTENTI & INTERAZIONI ---
+    addSupport: async (postId: number, userId: number) => {
+        await fetch(`${API_URL}/posts/${postId}/support?userId=${userId}`, { method: 'POST' });
+        return true;
+    },
+
+    // UTENTI
+    getUserProfile: (id: number) => request(`/users/${id}`),
+
     follow: (followerId: number, followedId: number) =>
         request(`/users/${followedId}/follow?followerId=${followerId}`, {
             method: 'POST'
         }),
 
-    supportPost: (postId: number, userId: number) =>
-        request(`/posts/${postId}/support?userId=${userId}`, {
-            method: 'POST'
-        }),
-
-    getTags: () => request('/tags'), API_URL,
-
-    addSupport: async (postId: number, userId: number) => {
-        const response = await fetch(`http://localhost:8080/api/posts/${postId}/support?userId=${userId}`, {
-            method: 'POST'
-        });
-        if (!response.ok) throw new Error('Errore durante il supporto');
-        // L'endpoint ritorna void (200 OK), quindi non facciamo response.json()
-        return true;
-    },
+    // MODERAZIONE
+    getPendingPosts: () => request('/moderation/pending'),
 };

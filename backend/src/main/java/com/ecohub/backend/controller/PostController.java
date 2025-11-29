@@ -46,4 +46,9 @@ public class PostController {
         contentService.addSupport(id, userId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/user/{userId}")
+    public List<Post> getUserPosts(@PathVariable Long userId) {
+        return contentService.getUserPosts(userId);
+    }
 }

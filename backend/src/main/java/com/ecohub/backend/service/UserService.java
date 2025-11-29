@@ -49,4 +49,8 @@ public class UserService {
     public List<Message> getInbox(Long userId) {
         return messageRepository.findByReceiver_IdOrderByTimestampDesc(userId);
     }
+
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("Utente non trovato"));
+    }
 }

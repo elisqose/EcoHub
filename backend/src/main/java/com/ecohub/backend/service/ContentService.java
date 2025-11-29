@@ -58,4 +58,8 @@ public class ContentService {
             supportRepository.save(new Support(null, user, post));
         }
     }
+
+    public List<Post> getUserPosts(Long userId) {
+        return postRepository.findByAuthor_Id(userId);
+    }
 }
