@@ -80,6 +80,27 @@ export default function Navbar({ user }: NavbarProps) {
                     + Nuovo Post
                 </button>
 
+                {/* --- NUOVO TASTO MESSAGGI --- */}
+                <button
+                    onClick={() => navigate('/messages')}
+                    style={{
+                        backgroundColor: '#e8f5e9', // Verde chiarissimo
+                        color: '#2e7d32',           // Testo verde scuro
+                        border: 'none',
+                        padding: '8px 15px',
+                        borderRadius: '20px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                    }}
+                    title="Vai ai messaggi"
+                >
+                    📩 Messaggi
+                </button>
+                {/* ---------------------------- */}
+
                 {/* Link al Profilo (Cliccabile) */}
                 <div
                     onClick={() => navigate('/profile')}
