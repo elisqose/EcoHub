@@ -1,5 +1,7 @@
 import type { Post, User } from '../types';
-import CommentSection from './CommentSection'; // <--- IMPORT NUOVO
+import CommentSection from './CommentSection';
+import TagBadge from './TagBadge';         // <--- Componente #7
+import SupportButton from './SupportButton'; // <--- Componente #8
 
 interface PostCardProps {
     post: Post;
@@ -9,15 +11,14 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, showActions, onApprove, onReject }: PostCardProps) {
-    // Recuperiamo l'utente per passarlo alla sezione commenti
     const userString = localStorage.getItem('user');
     const currentUser: User | null = userString ? JSON.parse(userString) : null;
 
     return (
         <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            {/* ... INIZIO CODICE ESISTENTE (Header, Titolo, Contenuto, Tags) ... */}
+
+            {/* Header Post */}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                {/* ... (tutto uguale a prima) ... */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#e0f2f1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00695c', fontWeight: 'bold' }}>
                         {post.author.username.charAt(0).toUpperCase()}
@@ -30,18 +31,30 @@ export default function PostCard({ post, showActions, onApprove, onReject }: Pos
                 {post.status === 'PENDING' && <span style={{ backgroundColor: '#fff3e0', color: '#ef6c00', padding: '2px 8px', borderRadius: '4px', fontSize: '12px' }}>In Attesa</span>}
             </div>
 
+            {/* Contenuto */}
             <h3 style={{ margin: '10px 0', fontSize: '18px' }}>{post.title}</h3>
             <p style={{ lineHeight: '1.6', color: '#444' }}>{post.content}</p>
 
+            {/* Immagine (se presente) - Opzionale, aggiungilo se vuoi fare bella figura */}
+            {post.imageUrl && (
+                <img src={post.imageUrl} alt="post" style={{width: '100%', borderRadius: '8px', marginTop: '10px', maxHeight: '300px', objectFit: 'cover'}} />
+            )}
+
+            {/* Tags (Uso Componente TagBadge) */}
             <div style={{ display: 'flex', gap: '8px', marginTop: '15px', flexWrap: 'wrap' }}>
                 {post.tags.map(tag => (
-                    <span key={tag.id} style={{ backgroundColor: '#f1f8e9', color: '#558b2f', padding: '4px 10px', borderRadius: '15px', fontSize: '12px' }}>
-                        #{tag.name}
-                    </span>
+                    <TagBadge key={tag.id} name={tag.name} />
                 ))}
             </div>
 
-            {/* SEZIONE AZIONI MODERATORE (uguale a prima) */}
+            {/* Toolbar Azioni Utente (Supporto) */}
+            {!showActions && (
+                <div style={{ marginTop: '15px', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <SupportButton post={post} currentUser={currentUser} />
+                </div>
+            )}
+
+            {/* Toolbar Moderatore */}
             {showActions && onApprove && onReject && (
                 <div style={{ borderTop: '1px solid #eee', marginTop: '15px', paddingTop: '15px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                     <button onClick={() => onReject(post.id)} style={{ padding: '8px 15px', border: '1px solid #ef5350', color: '#ef5350', backgroundColor: 'white', borderRadius: '4px', cursor: 'pointer' }}>Rifiuta</button>
@@ -49,10 +62,8 @@ export default function PostCard({ post, showActions, onApprove, onReject }: Pos
                 </div>
             )}
 
-            {/* ... FINE CODICE ESISTENTE ... */}
-
-            {/* NUOVA SEZIONE COMMENTI */}
-            {!showActions && ( // Mostriamo i commenti solo se NON siamo in modalità moderazione
+            {/* Sezione Commenti */}
+            {!showActions && (
                 <CommentSection post={post} currentUser={currentUser} />
             )}
         </div>

@@ -64,6 +64,14 @@ export const api = {
             method: 'POST'
         }),
 
-    // --- TAGS ---
-    getTags: () => request('/tags')
+    getTags: () => request('/tags'), API_URL,
+
+    addSupport: async (postId: number, userId: number) => {
+        const response = await fetch(`http://localhost:8080/api/posts/${postId}/support?userId=${userId}`, {
+            method: 'POST'
+        });
+        if (!response.ok) throw new Error('Errore durante il supporto');
+        // L'endpoint ritorna void (200 OK), quindi non facciamo response.json()
+        return true;
+    },
 };
