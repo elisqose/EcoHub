@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import PostCard from '../components/PostCard';
@@ -13,9 +13,13 @@ export default function UserProfilePage() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Stati per Modali
+    // Stati per Modali esistenti
     const [modalType, setModalType] = useState<'NONE' | 'FOLLOWERS' | 'FOLLOWING'>('NONE');
     const [editingPost, setEditingPost] = useState<Post | null>(null);
+
+    // NUOVI STATI: Per la richiesta moderatore
+    const [isModRequestOpen, setIsModRequestOpen] = useState(false);
+    const [modMotivation, setModMotivation] = useState('');
 
     // Ref per l'input file (cambio foto)
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -26,8 +30,7 @@ export default function UserProfilePage() {
 
     // Logica per determinare quale profilo caricare (URL id vs Current User)
     const userIdToLoad = id ? parseInt(id) : currentUser?.id;
-    // !!currentUser forza il cast a booleano per evitare problemi di tipo con TypeScript
-    const isOwnProfile = !id || (!!currentUser && parseInt(id) === currentUser.id);
+    const isOwnProfile = !id || (!!currentUser && parseInt(id!) === currentUser.id);
 
     useEffect(() => {
         if (userIdToLoad) {
@@ -60,12 +63,10 @@ export default function UserProfilePage() {
             try {
                 await api.updateProfilePicture(currentUser.id, base64String);
 
-                // Aggiorniamo stato locale
                 if (profileUser) {
                     setProfileUser({ ...profileUser, profilePicture: base64String });
                 }
 
-                // Aggiorniamo localStorage per mantenere la foto nella Navbar
                 const updatedCurrentUser = { ...currentUser, profilePicture: base64String };
                 localStorage.setItem('user', JSON.stringify(updatedCurrentUser));
 
@@ -96,6 +97,22 @@ export default function UserProfilePage() {
         setEditingPost(post);
     };
 
+    // --- NUOVA FUNZIONE: GESTIONE RICHIESTA MODERATORE ---
+    const handleBecomeModerator = async () => {
+        if (!modMotivation.trim()) return alert("Inserisci una motivazione!");
+        if (!profileUser) return;
+
+        try {
+            await api.requestModeration(profileUser.username, modMotivation);
+            alert("Richiesta inviata con successo all'amministratore!");
+            setIsModRequestOpen(false);
+            setModMotivation('');
+        } catch (error) {
+            console.error(error);
+            alert("Errore nell'invio della richiesta.");
+        }
+    };
+
     // --- RENDER ---
     if (!currentUser) return (
         <div style={{ padding: '40px', textAlign: 'center' }}>
@@ -107,7 +124,6 @@ export default function UserProfilePage() {
 
     if (loading) return <p style={{ textAlign: 'center', marginTop: '50px', color: '#666' }}>Caricamento profilo...</p>;
 
-    // Filtri Post
     const approvedPosts = posts.filter(p => p.status === 'APPROVED');
     const pendingPosts = isOwnProfile ? posts.filter(p => p.status === 'PENDING' || p.status === 'REQUIRES_CHANGES') : [];
     const rejectedPosts = isOwnProfile ? posts.filter(p => p.status === 'REJECTED') : [];
@@ -149,7 +165,6 @@ export default function UserProfilePage() {
                             </div>
                         )}
 
-                        {/* Bottone cambio foto (solo se mio profilo) */}
                         {isOwnProfile && (
                             <>
                                 <button
@@ -221,11 +236,47 @@ export default function UserProfilePage() {
                             <span style={{ color: '#2e7d32', fontSize: '14px', fontWeight: 'bold', textDecoration: 'underline' }}>Following</span>
                         </div>
                     </div>
+
+                    {/* --- NUOVA SEZIONE: RICHIESTA MODERATORE (Solo se profilo mio e non sono già mod) --- */}
+                    {isOwnProfile && profileUser?.role !== 'MODERATOR' && (
+                        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                            {!isModRequestOpen ? (
+                                <button
+                                    onClick={() => setIsModRequestOpen(true)}
+                                    style={{
+                                        backgroundColor: 'transparent',
+                                        border: '1px solid #ff9800',
+                                        color: '#ef6c00',
+                                        padding: '8px 16px',
+                                        borderRadius: '20px',
+                                        cursor: 'pointer',
+                                        fontWeight: 'bold',
+                                        fontSize: '14px'
+                                    }}
+                                >
+                                    🛡️ Diventa Moderatore
+                                </button>
+                            ) : (
+                                <div style={{ backgroundColor: '#fff3e0', padding: '15px', borderRadius: '8px', border: '1px solid #ffe0b2', marginTop: '10px' }}>
+                                    <h4 style={{ margin: '0 0 10px 0', color: '#e65100' }}>Richiesta Moderazione</h4>
+                                    <textarea
+                                        placeholder="Perché vuoi diventare moderatore?"
+                                        value={modMotivation}
+                                        onChange={e => setModMotivation(e.target.value)}
+                                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ffcc80', minHeight: '60px', marginBottom: '10px', fontFamily: 'inherit' }}
+                                    />
+                                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                                        <button onClick={() => setIsModRequestOpen(false)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>Annulla</button>
+                                        <button onClick={handleBecomeModerator} style={{ backgroundColor: '#ff9800', color: 'white', border: 'none', padding: '6px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Invia</button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* --- SEZIONI POST --- */}
 
-                {/* 1. Pendenti (Solo miei) */}
                 {pendingPosts.length > 0 && (
                     <div style={{ marginBottom: '30px' }}>
                         <h3 style={{ color: '#f57c00', borderBottom: '2px solid #f57c00', paddingBottom: '10px' }}>
@@ -249,7 +300,6 @@ export default function UserProfilePage() {
                     </div>
                 )}
 
-                {/* 2. Rifiutati (Solo miei) */}
                 {rejectedPosts.length > 0 && (
                     <div style={{ marginBottom: '30px' }}>
                         <h3 style={{ color: '#d32f2f', borderBottom: '2px solid #d32f2f', paddingBottom: '10px' }}>
@@ -266,7 +316,6 @@ export default function UserProfilePage() {
                     </div>
                 )}
 
-                {/* 3. Approvati (Pubblici) */}
                 <div>
                     <h3 style={{ color: '#2e7d32', borderBottom: '2px solid #2e7d32', paddingBottom: '10px' }}>
                         {isOwnProfile ? "✅ I tuoi post pubblicati" : `✅ Post pubblicati da @${profileUser?.username}`}
@@ -282,7 +331,6 @@ export default function UserProfilePage() {
                                 post={post}
                                 isOwnPost={isOwnProfile}
                                 onDelete={isOwnProfile ? handleDeletePost : undefined}
-                                // onEdit non passato qui per scelta (di solito non si modificano post già approvati)
                             />
                         ))
                     )}

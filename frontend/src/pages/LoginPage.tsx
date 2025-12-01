@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Aggiungi Link
+import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import type { User } from '../types';
 
@@ -29,7 +29,6 @@ export default function LoginPage() {
             alignItems: 'center',
             height: '100vh',
             backgroundColor: '#f0f2f5',
-            // Font rimosso qui perché gestito globalmente o di default
         }}>
             <div style={{
                 padding: '40px',
@@ -43,7 +42,6 @@ export default function LoginPage() {
                 <h2 style={{ textAlign: 'center', color: '#555', marginBottom: '30px', fontSize: '18px' }}>Accedi alla Community</h2>
 
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {/* ... (input username e password rimangono uguali) ... */}
                     <div>
                         <input
                             type="text" placeholder="Username" required
@@ -65,19 +63,13 @@ export default function LoginPage() {
 
                 {error && <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#ffebee', color: '#c62828', borderRadius: '4px', textAlign: 'center', fontSize: '14px', border: '1px solid #ef9a9a' }}>⚠️ {error}</div>}
 
-                {/* --- MODIFICA QUI: Link di Registrazione e Moderazione --- */}
                 <div style={{ marginTop: '30px', textAlign: 'center', fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <div>
                         <span style={{ color: '#666' }}>Non hai un account? </span>
                         <Link to="/register" style={{ color: '#2e7d32', fontWeight: 'bold', textDecoration: 'none' }}>Registrati qui</Link>
                     </div>
-
-                    <div>
-                        <span style={{ color: '#666' }}>Vuoi diventare un moderatore? </span>
-                        <Link to="/moderator-request" style={{ color: '#ff9800', fontWeight: 'bold', textDecoration: 'none' }}>Invia richiesta</Link>
-                    </div>
+                    {/* Link "Diventa Moderatore" RIMOSSO da qui */}
                 </div>
-                {/* ----------------------------------------------------- */}
             </div>
         </div>
     );
