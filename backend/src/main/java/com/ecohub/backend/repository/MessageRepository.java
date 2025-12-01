@@ -9,7 +9,6 @@ import java.util.List;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
-    // --- NUOVO METODO UNICO PER LA CRONOLOGIA (INVIATI + RICEVUTI) ---
-    // Cerca i messaggi dove l'utente è il mittente (Sender) OPPURE il destinatario (Receiver)
-    List<Message> findBySender_IdOrReceiver_IdOrderByTimestampDesc(Long senderId, Long receiverId);
+    // Assicurati che questa riga sia identica, incluse le maiuscole/minuscole
+    List<Message> findByReceiver_IdOrderByTimestampDesc(Long receiverId);
 }

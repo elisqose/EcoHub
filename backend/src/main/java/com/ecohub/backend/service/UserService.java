@@ -65,6 +65,7 @@ public class UserService {
     }
 
     public List<Message> getInbox(Long userId) {
+        // Questo metodo corrisponde esattamente a quello nel MessageRepository
         return messageRepository.findByReceiver_IdOrderByTimestampDesc(userId);
     }
 
