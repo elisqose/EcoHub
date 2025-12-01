@@ -22,7 +22,6 @@ export default function CommentSection({ post, currentUser }: CommentSectionProp
     const handleDeleteComment = async (commentId: number) => {
         if (!currentUser) return;
 
-        // Messaggio diverso a seconda del ruolo
         const confirmMsg = currentUser.role === 'MODERATOR'
             ? "⚠️ Sei un Moderatore. Eliminando questo commento, invierai un avviso automatico all'autore. Procedere?"
             : "Vuoi eliminare il tuo commento?";
@@ -31,7 +30,6 @@ export default function CommentSection({ post, currentUser }: CommentSectionProp
 
         try {
             await api.deleteComment(post.id, commentId, currentUser.id);
-            // Aggiorna la lista locale rimuovendo il commento
             setComments(comments.filter(c => c.id !== commentId));
         } catch (error) {
             console.error("Errore cancellazione commento:", error);
@@ -57,9 +55,9 @@ export default function CommentSection({ post, currentUser }: CommentSectionProp
                         {comments.length === 0 && <p style={{ fontSize: '13px', color: '#999' }}>Nessun commento. Sii il primo!</p>}
 
                         {comments.map(comment => {
-                            // Verifica permessi per mostrare il bottone delete
+                            // Verifica permessi
                             const isModerator = currentUser?.role === 'MODERATOR';
-                            const isAuthor = currentUser?.id === comment.author.id;
+                            const isAuthor = currentUser?.id === comment.author?.id;
                             const canDelete = isModerator || isAuthor;
 
                             return (
@@ -67,34 +65,41 @@ export default function CommentSection({ post, currentUser }: CommentSectionProp
                                     backgroundColor: '#f9f9f9',
                                     padding: '10px',
                                     borderRadius: '8px',
-                                    position: 'relative', // Per posizionare il bottone elimina
                                     border: isModerator && !isAuthor ? '1px solid #ffe0b2' : 'none' // Evidenzia ai mod i commenti altrui
                                 }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                                        <strong>{comment.author.username}</strong>
-                                        <span style={{ color: '#888' }}>{new Date(comment.creationDate).toLocaleDateString()}</span>
-                                    </div>
-                                    <p style={{ margin: 0, fontSize: '14px', color: '#333' }}>{comment.text}</p>
+                                    {/* Header Commento: Username a SX, (Cestino + Data) a DX */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', marginBottom: '4px' }}>
 
-                                    {/* Bottone Elimina (Visibile solo se autorizzato) */}
-                                    {canDelete && (
-                                        <button
-                                            onClick={() => handleDeleteComment(comment.id)}
-                                            title={isModerator ? "Elimina come Moderatore" : "Elimina il tuo commento"}
-                                            style={{
-                                                position: 'absolute',
-                                                top: '5px',
-                                                right: '5px',
-                                                background: 'none',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                fontSize: '12px',
-                                                color: '#d32f2f'
-                                            }}
-                                        >
-                                            🗑️
-                                        </button>
-                                    )}
+                                        {/* Username */}
+                                        <strong>{comment.author?.username || "Utente sconosciuto"}</strong>
+
+                                        {/* Gruppo Azioni e Data */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+
+                                            {/* Bottone Elimina (Ora è PRIMA della data e non in position absolute) */}
+                                            {canDelete && (
+                                                <button
+                                                    onClick={() => handleDeleteComment(comment.id)}
+                                                    title={isModerator ? "Elimina come Moderatore" : "Elimina il tuo commento"}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        cursor: 'pointer',
+                                                        fontSize: '14px',
+                                                        lineHeight: 1,
+                                                        color: '#d32f2f',
+                                                        padding: 0
+                                                    }}
+                                                >
+                                                    🗑️
+                                                </button>
+                                            )}
+
+                                            <span style={{ color: '#888' }}>{new Date(comment.creationDate).toLocaleDateString()}</span>
+                                        </div>
+                                    </div>
+
+                                    <p style={{ margin: 0, fontSize: '14px', color: '#333' }}>{comment.text}</p>
                                 </div>
                             );
                         })}

@@ -55,6 +55,23 @@ export const api = {
             method: 'DELETE'
         }),
 
+    updateBio: (userId: number, bio: string) =>
+        request(`/users/${userId}/bio`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'text/plain' },
+            body: bio
+        }),
+
+    unfollow: (followerId: number, followedId: number) =>
+        request(`/users/${followedId}/follow?followerId=${followerId}`, {
+            method: 'DELETE'
+        }),
+
+    removeFollower: (userId: number, followerId: number) =>
+        request(`/users/${userId}/follower?followerId=${followerId}`, {
+            method: 'DELETE'
+        }),
+
     // --- TAGS ---
     getTags: () => request('/tags'),
 

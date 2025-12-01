@@ -110,11 +110,21 @@ public class ContentService {
     }
 
     // ... (Mantieni addSupport, getUserPosts) ...
-    public void addSupport(Long postId, Long userId) {
+    public void toggleSupport(Long postId, Long userId) {
         Post post = postRepository.findById(postId).orElseThrow();
         User user = userRepository.findById(userId).orElseThrow();
-        if(!supportRepository.existsByUserAndPost(user, post)) {
-            supportRepository.save(new Support(null, user, post));
+
+        // Cerchiamo se esiste già il supporto
+        // Nota: Assicurati che nel Repository tu abbia un metodo per TROVARE il supporto, non solo exists
+        // Se non lo hai, aggiungiamo la logica qui sotto usando stream o query.
+        // Per semplicità, modifichiamo SupportRepository nel prossimo step.
+
+        Support existingSupport = supportRepository.findByUserAndPost(user, post).orElse(null);
+
+        if (existingSupport != null) {
+            supportRepository.delete(existingSupport); // RIMUOVI (Foglia tolta)
+        } else {
+            supportRepository.save(new Support(null, user, post)); // AGGIUNGI (Foglia messa)
         }
     }
 

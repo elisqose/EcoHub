@@ -69,7 +69,7 @@ public class PostController {
     // ... (metodi esistenti: supportPost, getUserPosts) ...
     @PostMapping("/{id}/support")
     public ResponseEntity<?> supportPost(@PathVariable Long id, @RequestParam Long userId) {
-        contentService.addSupport(id, userId);
+        contentService.toggleSupport(id, userId); // <--- Chiama il nuovo metodo Toggle
         return ResponseEntity.ok().build();
     }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import PostCard from '../components/PostCard';
 import UserList from '../components/UserList';
@@ -9,28 +9,38 @@ import type { User, Post } from '../types';
 
 export default function UserProfilePage() {
     const { id } = useParams();
+    const navigate = useNavigate();
+
+    // Stati Dati
     const [profileUser, setProfileUser] = useState<User | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Stati per Modali esistenti
+    // Stati Modali
     const [modalType, setModalType] = useState<'NONE' | 'FOLLOWERS' | 'FOLLOWING'>('NONE');
     const [editingPost, setEditingPost] = useState<Post | null>(null);
 
-    // NUOVI STATI: Per la richiesta moderatore
+    // Stati Edit Bio
+    const [isEditingBio, setIsEditingBio] = useState(false);
+    const [tempBio, setTempBio] = useState('');
+
+    // Stati Richiesta Moderatore
     const [isModRequestOpen, setIsModRequestOpen] = useState(false);
     const [modMotivation, setModMotivation] = useState('');
 
-    // Ref per l'input file (cambio foto)
+    // Ref per upload foto
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Recupero utente loggato
+    // Utente Loggato
     const storedUser = localStorage.getItem('user');
     const currentUser: User | null = storedUser ? JSON.parse(storedUser) : null;
 
-    // Logica per determinare quale profilo caricare (URL id vs Current User)
+    // Logica ID Profilo
     const userIdToLoad = id ? parseInt(id) : currentUser?.id;
     const isOwnProfile = !id || (!!currentUser && parseInt(id!) === currentUser.id);
+
+    // Check Follow
+    const isFollowing = profileUser?.followers?.some(u => u.id === currentUser?.id);
 
     useEffect(() => {
         if (userIdToLoad) {
@@ -43,6 +53,7 @@ export default function UserProfilePage() {
         try {
             const userData = await api.getUserProfile(userIdToLoad);
             setProfileUser(userData);
+            setTempBio(userData.bio || ''); // Pre-popola la bio per l'edit
             const userPosts = await api.getUserPosts(userIdToLoad);
             setPosts(userPosts);
         } catch (error) {
@@ -52,7 +63,7 @@ export default function UserProfilePage() {
         }
     };
 
-    // --- GESTIONE FOTO PROFILO ---
+    // --- AZIONE: CAMBIO FOTO ---
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || !currentUser) return;
@@ -63,10 +74,11 @@ export default function UserProfilePage() {
             try {
                 await api.updateProfilePicture(currentUser.id, base64String);
 
+                // Aggiorna stato locale
                 if (profileUser) {
                     setProfileUser({ ...profileUser, profilePicture: base64String });
                 }
-
+                // Aggiorna localStorage
                 const updatedCurrentUser = { ...currentUser, profilePicture: base64String };
                 localStorage.setItem('user', JSON.stringify(updatedCurrentUser));
 
@@ -79,7 +91,47 @@ export default function UserProfilePage() {
         reader.readAsDataURL(file);
     };
 
-    // --- GESTIONE POST ---
+    // --- AZIONE: FOLLOW / UNFOLLOW ---
+    const handleToggleFollow = async () => {
+        if (!currentUser || !profileUser) return;
+        try {
+            if (isFollowing) {
+                await api.unfollow(currentUser.id, profileUser.id);
+                alert(`Non segui più @${profileUser.username}`);
+            } else {
+                await api.follow(currentUser.id, profileUser.id);
+                alert(`Ora segui @${profileUser.username}!`);
+            }
+            loadProfileData();
+        } catch (error) {
+            alert("Errore operazione follow");
+        }
+    };
+
+    // --- AZIONE: CONTATTA ---
+    const handleContact = () => {
+        if (!profileUser) return;
+        navigate('/messages');
+        alert(`Copia questo username per scrivergli: ${profileUser.username}`);
+    };
+
+    // --- AZIONE: SALVA BIO ---
+    const handleSaveBio = async () => {
+        if(!currentUser) return;
+        try {
+            await api.updateBio(currentUser.id, tempBio);
+            if(profileUser) setProfileUser({...profileUser, bio: tempBio});
+
+            const updatedLocal = {...currentUser, bio: tempBio};
+            localStorage.setItem('user', JSON.stringify(updatedLocal));
+
+            setIsEditingBio(false);
+        } catch (error) {
+            alert("Errore salvataggio bio");
+        }
+    };
+
+    // --- AZIONE: POST ---
     const handleDeletePost = async (postId: number) => {
         if (!confirm("Sei sicuro di voler eliminare questo post?")) return;
         try {
@@ -97,7 +149,7 @@ export default function UserProfilePage() {
         setEditingPost(post);
     };
 
-    // --- NUOVA FUNZIONE: GESTIONE RICHIESTA MODERATORE ---
+    // --- AZIONE: DIVENTA MODERATORE ---
     const handleBecomeModerator = async () => {
         if (!modMotivation.trim()) return alert("Inserisci una motivazione!");
         if (!profileUser) return;
@@ -199,9 +251,62 @@ export default function UserProfilePage() {
                         </span>
                     )}
 
-                    <p style={{ color: '#666', fontStyle: 'italic', marginTop: '10px' }}>
-                        {profileUser?.bio || "Nessuna biografia inserita."}
-                    </p>
+                    {/* BOTTONI FOLLOW / CONTATTA (Solo se non è il mio profilo) */}
+                    {!isOwnProfile && (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
+                            <button
+                                onClick={handleToggleFollow}
+                                style={{
+                                    backgroundColor: isFollowing ? 'white' : '#2e7d32',
+                                    color: isFollowing ? '#2e7d32' : 'white',
+                                    border: '1px solid #2e7d32',
+                                    padding: '6px 15px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold'
+                                }}
+                            >
+                                {isFollowing ? 'Smetti di seguire' : 'Segui'}
+                            </button>
+                            <button
+                                onClick={handleContact}
+                                style={{
+                                    backgroundColor: '#e8f5e9', color: '#2e7d32', border: 'none',
+                                    padding: '6px 15px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold'
+                                }}
+                            >
+                                📩 Contatta
+                            </button>
+                        </div>
+                    )}
+
+                    {/* SEZIONE BIO (Visualizzazione / Modifica) */}
+                    <div style={{ marginTop: '15px' }}>
+                        {isOwnProfile && isEditingBio ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                                <textarea
+                                    value={tempBio}
+                                    onChange={e => setTempBio(e.target.value)}
+                                    rows={3}
+                                    style={{ width: '80%', padding: '8px', borderRadius: '4px', borderColor: '#ccc', fontFamily: 'inherit' }}
+                                />
+                                <div>
+                                    <button onClick={() => setIsEditingBio(false)} style={{ marginRight: '5px', cursor: 'pointer', background:'none', border:'none', textDecoration:'underline' }}>Annulla</button>
+                                    <button onClick={handleSaveBio} style={{ backgroundColor: '#2e7d32', color: 'white', border: 'none', padding: '5px 15px', borderRadius: '4px', cursor: 'pointer' }}>Salva</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <p style={{ color: '#666', fontStyle: 'italic', position: 'relative', display: 'inline-block', maxWidth: '80%' }}>
+                                {profileUser?.bio || "Nessuna biografia inserita."}
+                                {isOwnProfile && (
+                                    <span
+                                        onClick={() => setIsEditingBio(true)}
+                                        style={{ cursor: 'pointer', marginLeft: '8px', fontSize: '16px' }}
+                                        title="Modifica Bio"
+                                    >
+                                        ✏️
+                                    </span>
+                                )}
+                            </p>
+                        )}
+                    </div>
 
                     {isOwnProfile && <p style={{ fontSize: '14px', color: '#888' }}>{profileUser?.email}</p>}
 
@@ -237,7 +342,7 @@ export default function UserProfilePage() {
                         </div>
                     </div>
 
-                    {/* --- NUOVA SEZIONE: RICHIESTA MODERATORE (Solo se profilo mio e non sono già mod) --- */}
+                    {/* RICHIESTA MODERATORE (Solo se profilo mio e non sono già mod) */}
                     {isOwnProfile && profileUser?.role !== 'MODERATOR' && (
                         <div style={{ marginTop: '20px', textAlign: 'center' }}>
                             {!isModRequestOpen ? (
@@ -343,7 +448,10 @@ export default function UserProfilePage() {
                 <UserList
                     title="Followers"
                     users={profileUser.followers}
-                    onClose={() => setModalType('NONE')}
+                    currentUserId={currentUser.id}
+                    profileOwnerId={profileUser.id}
+                    listType="FOLLOWERS"
+                    onClose={() => { setModalType('NONE'); loadProfileData(); }}
                 />
             )}
 
@@ -351,7 +459,10 @@ export default function UserProfilePage() {
                 <UserList
                     title="Following"
                     users={profileUser.following}
-                    onClose={() => setModalType('NONE')}
+                    currentUserId={currentUser.id}
+                    profileOwnerId={profileUser.id}
+                    listType="FOLLOWING"
+                    onClose={() => { setModalType('NONE'); loadProfileData(); }}
                 />
             )}
 

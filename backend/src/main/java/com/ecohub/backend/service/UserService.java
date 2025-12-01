@@ -43,6 +43,36 @@ public class UserService {
         }
     }
 
+    // 1. Aggiorna Bio
+    public User updateBio(Long userId, String newBio) {
+        User user = userRepository.findById(userId).orElseThrow();
+        user.setBio(newBio);
+        return userRepository.save(user);
+    }
+
+    // 2. Smetti di seguire (Unfollow)
+    public void unfollowUser(Long followerId, Long followedId) {
+        User follower = userRepository.findById(followerId).orElseThrow();
+        User followed = userRepository.findById(followedId).orElseThrow();
+
+        if(follower.getFollowing().contains(followed)) {
+            follower.getFollowing().remove(followed);
+            userRepository.save(follower);
+        }
+    }
+
+    // 3. Rimuovi Follower (Forza qualcuno a non seguirti più)
+    public void removeFollower(Long userId, Long followerId) {
+        User user = userRepository.findById(userId).orElseThrow(); // Io
+        User followerToRemove = userRepository.findById(followerId).orElseThrow(); // Quello che voglio rimuovere
+
+        // Rimuoviamo me dalla sua lista di following
+        if(followerToRemove.getFollowing().contains(user)) {
+            followerToRemove.getFollowing().remove(user);
+            userRepository.save(followerToRemove);
+        }
+    }
+
     // Metodo base per inviare messaggi (usato anche internamente per le notifiche admin)
     public Message sendMessage(Long senderId, Long receiverId, String content) {
         User sender = userRepository.findById(senderId).orElseThrow(() -> new RuntimeException("Mittente non trovato"));

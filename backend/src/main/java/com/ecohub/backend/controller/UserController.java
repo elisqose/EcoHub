@@ -76,4 +76,22 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PutMapping("/{id}/bio")
+    public ResponseEntity<?> updateBio(@PathVariable Long id, @RequestBody String bio) {
+        userService.updateBio(id, bio);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}/follow")
+    public ResponseEntity<?> unfollow(@RequestParam Long followerId, @PathVariable Long id) {
+        userService.unfollowUser(followerId, id); // id è l'utente che smetto di seguire
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}/follower")
+    public ResponseEntity<?> removeFollower(@PathVariable Long id, @RequestParam Long followerId) {
+        userService.removeFollower(id, followerId); // id sono io, followerId è chi rimuovo
+        return ResponseEntity.ok().build();
+    }
 }
