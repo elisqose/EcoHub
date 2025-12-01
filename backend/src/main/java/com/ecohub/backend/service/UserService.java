@@ -107,4 +107,9 @@ public class UserService {
         // Inviamo il messaggio di rifiuto
         sendMessage(admin.getId(), user.getId(), "❌ Ciao " + username + ", ci dispiace informarti che la tua richiesta per diventare Moderatore non è stata accettata al momento.");
     }
+
+    // --- NUOVO METODO: Necessario per il tasto "Rifiuta (Elimina)" ---
+    public void deleteMessage(Long messageId) {
+        messageRepository.deleteById(messageId);
+    }
 }
