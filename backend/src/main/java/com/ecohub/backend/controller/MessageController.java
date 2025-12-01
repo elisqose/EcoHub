@@ -11,13 +11,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/messages")
-@CrossOrigin(origins = "http://localhost:5173") // Abilita CORS per React/Vite
+@CrossOrigin(origins = "*")
 public class MessageController {
 
     @Autowired
     private MessageService messageService;
 
-    // Endpoint per ottenere i messaggi ricevuti da un utente
     @GetMapping("/received/{userId}")
     public ResponseEntity<List<Message>> getReceivedMessages(@PathVariable Long userId) {
         try {
@@ -28,13 +27,13 @@ public class MessageController {
         }
     }
 
-    // Endpoint per inviare un messaggio
     @PostMapping("/send")
     public ResponseEntity<?> sendMessage(@RequestBody MessageRequest request) {
         try {
+            // --- MODIFICA QUI: Passiamo getReceiverUsername() ---
             Message sentMessage = messageService.sendMessage(
                     request.getSenderId(),
-                    request.getReceiverId(),
+                    request.getReceiverUsername(),
                     request.getContent()
             );
             return ResponseEntity.ok(sentMessage);
@@ -43,11 +42,11 @@ public class MessageController {
         }
     }
 
-    // DTO interno per la richiesta
     @Data
     public static class MessageRequest {
         private Long senderId;
-        private Long receiverId;
+        // --- MODIFICA QUI: Da Long receiverId a String receiverUsername ---
+        private String receiverUsername;
         private String content;
     }
 }

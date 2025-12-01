@@ -21,7 +21,7 @@ public class ContentService {
         User author = userRepository.findById(userId).orElseThrow();
         post.setAuthor(author);
         post.setCreationDate(LocalDateTime.now());
-        post.setStatus(PostStatus.PENDING); // Default: va in moderazione
+        post.setStatus(PostStatus.PENDING);
 
         List<Tag> tags = new ArrayList<>();
         for(String name : tagNames) {
@@ -32,6 +32,40 @@ public class ContentService {
         return postRepository.save(post);
     }
 
+    // --- NUOVO: Modifica Post ---
+    public Post updatePost(Long postId, Long userId, Post updatedData) {
+        Post existingPost = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post non trovato"));
+
+        // Controllo autore
+        if (!existingPost.getAuthor().getId().equals(userId)) {
+            throw new RuntimeException("Non sei l'autore di questo post!");
+        }
+
+        // Aggiorniamo i campi
+        existingPost.setTitle(updatedData.getTitle());
+        existingPost.setContent(updatedData.getContent());
+        if (updatedData.getImageUrl() != null && !updatedData.getImageUrl().isEmpty()) {
+            existingPost.setImageUrl(updatedData.getImageUrl());
+        }
+
+        // IMPORTANTE: Dopo una modifica, il post torna in moderazione!
+        existingPost.setStatus(PostStatus.PENDING);
+        existingPost.setModeratorNote(null); // Rimuoviamo la nota vecchia
+
+        return postRepository.save(existingPost);
+    }
+
+    // --- NUOVO: Cancella Post ---
+    public void deletePost(Long postId, Long userId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post non trovato"));
+
+        if (!post.getAuthor().getId().equals(userId)) {
+            throw new RuntimeException("Non puoi cancellare post altrui!");
+        }
+        postRepository.delete(post);
+    }
+
+    // ... (Mantieni gli altri metodi: getPublicFeed, getPostDetail, getPostsByTag, addComment, addSupport, getUserPosts)
     public List<Post> getPublicFeed() {
         return postRepository.findByStatusOrderByCreationDateDesc(PostStatus.APPROVED);
     }

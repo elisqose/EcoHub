@@ -44,6 +44,17 @@ export const api = {
             body: JSON.stringify(post)
         }),
 
+    updatePost: (postId: number, userId: number, postData: any) =>
+        request(`/posts/${postId}?userId=${userId}`, {
+            method: 'PUT',
+            body: JSON.stringify(postData)
+        }),
+
+    deletePost: (postId: number, userId: number) =>
+        request(`/posts/${postId}?userId=${userId}`, {
+            method: 'DELETE'
+        }),
+
     // TAGS (Nuovo metodo aggiunto per la FilterBar)
     getTags: () => request('/tags'),
 
@@ -65,14 +76,24 @@ export const api = {
     getReceivedMessages: (userId: number) =>
         request(`/messages/received/${userId}`),
 
-    sendMessage: (senderId: number, receiverId: number, content: string) =>
+    // --- MODIFICA QUI: receiverId (number) diventa receiverUsername (string) ---
+    sendMessage: (senderId: number, receiverUsername: string, content: string) =>
         request('/messages/send', {
             method: 'POST',
-            body: JSON.stringify({ senderId, receiverId, content })
+            body: JSON.stringify({ senderId, receiverUsername, content })
         }),
 
     // UTENTI
     getUserProfile: (id: number) => request(`/users/${id}`),
+
+    updateProfilePicture: (userId: number, base64Image: string) =>
+        request(`/users/${userId}/picture`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'text/plain' }, // Importante per mandare la stringa raw
+            body: base64Image
+        }),
+
+    searchUsers: (query: string) => request(`/users/search?query=${query}`),
 
     follow: (followerId: number, followedId: number) =>
         request(`/users/${followedId}/follow?followerId=${followerId}`, {

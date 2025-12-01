@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,15 +30,55 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("--- INIZIO CARICAMENTO DATI DI TEST ---");
 
             // 1. CREAZIONE UTENTI
-            // Utente Moderatore
-            User admin = new User(null, "admin", "admin", "admin@ecohub.com", "Sono il moderatore del sistema.", UserRole.MODERATOR, null, null);
 
-            // Utente Standard 1 (Mario)
-            User mario = new User(null, "mario", "password", "mario@email.com", "Amo il giardinaggio urbano.", UserRole.STANDARD, null, null);
+            // ADMIN - Foto: Icona scudo/sicurezza
+            User admin = new User(
+                    null,
+                    "admin",
+                    "admin",
+                    "admin@ecohub.com",
+                    "Sono il moderatore del sistema.",
+                    UserRole.MODERATOR,
+                    "https://cdn-icons-png.flaticon.com/512/9703/9703596.png", // <--- Foto Admin
+                    new ArrayList<>(),
+                    new ArrayList<>(),
+                    new ArrayList<>()
+            );
 
-            // Utente Standard 2 (Luigi)
-            User luigi = new User(null, "luigi", "password", "luigi@email.com", "Esperto di riciclo creativo.", UserRole.STANDARD, null, null);
+            // MARIO - Foto: Ritratto uomo sorridente
+            User mario = new User(
+                    null,
+                    "mario",
+                    "password",
+                    "mario@email.com",
+                    "Amo il giardinaggio urbano.",
+                    UserRole.STANDARD,
+                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80", // <--- Foto Mario
+                    new ArrayList<>(),
+                    new ArrayList<>(),
+                    new ArrayList<>()
+            );
 
+            // LUIGI - Foto: Ritratto ragazzo creativo
+            User luigi = new User(
+                    null,
+                    "luigi",
+                    "password",
+                    "luigi@email.com",
+                    "Esperto di riciclo creativo.",
+                    UserRole.STANDARD,
+                    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80", // <--- Foto Luigi
+                    new ArrayList<>(),
+                    new ArrayList<>(),
+                    new ArrayList<>()
+            );
+
+            // Relazione di follow per test: Mario segue Luigi
+            mario.getFollowing().add(luigi);
+
+            // Salviamo gli utenti (JPA gestirà le relazioni se configurato correttamente,
+            // ma per sicurezza salviamo prima e poi aggiorniamo se necessario.
+            // Qui con saveAll e CascadeType di default dovrebbe andare bene)
             userRepository.saveAll(Arrays.asList(admin, mario, luigi));
 
             // 2. CREAZIONE TAG
@@ -50,37 +91,37 @@ public class DataInitializer implements CommandLineRunner {
 
             // 3. CREAZIONE POST
 
-            // Post 1: Approvato (Visibile nella Home) - Scritto da Mario
+            // Post 1: Mario
             Post p1 = new Post(
                     null,
                     "Il mio orto urbano",
                     "Oggi ho finalmente piantato i pomodori sul balcone! È incredibile quanto spazio si possa recuperare verticalmente.",
-                    "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8", // Immagine presa da Unsplash
-                    LocalDateTime.now().minusDays(2), // Creato 2 giorni fa
+                    "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8",
+                    LocalDateTime.now().minusDays(2),
                     PostStatus.APPROVED,
                     null,
                     mario,
-                    null,
-                    null,
+                    new ArrayList<>(),
+                    new ArrayList<>(),
                     List.of(tagEco, tagZeroWaste)
             );
 
-            // Post 2: Approvato (Visibile nella Home) - Scritto da Luigi
+            // Post 2: Luigi
             Post p2 = new Post(
                     null,
                     "Guida al riciclo della plastica",
                     "Non buttate i tappi delle bottiglie! Ecco come riutilizzarli per creare opere d'arte...",
-                    null, // Nessuna immagine
+                    null,
                     LocalDateTime.now().minusHours(5),
                     PostStatus.APPROVED,
                     null,
                     luigi,
-                    null,
-                    null,
+                    new ArrayList<>(),
+                    new ArrayList<>(),
                     List.of(tagRiciclo)
             );
 
-            // Post 3: In Attesa (Visibile solo al Moderatore) - Scritto da Mario
+            // Post 3: Mario (Pending)
             Post p3 = new Post(
                     null,
                     "Organizzazione pulizia parco",
@@ -90,8 +131,8 @@ public class DataInitializer implements CommandLineRunner {
                     PostStatus.PENDING,
                     null,
                     mario,
-                    null,
-                    null,
+                    new ArrayList<>(),
+                    new ArrayList<>(),
                     List.of(tagEventi, tagEco)
             );
 

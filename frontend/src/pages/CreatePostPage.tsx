@@ -113,7 +113,7 @@ export default function CreatePostPage() {
                         value={content}
                         onChange={e => setContent(e.target.value)}
                         rows={6}
-                        style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontFamily: 'inherit' }}
+                        style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc' }}
                         required
                     />
 

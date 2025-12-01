@@ -4,12 +4,15 @@ export interface User {
     email: string;
     role: 'STANDARD' | 'MODERATOR';
     bio?: string;
+    profilePicture?: string;
+    followers?: User[];
+    following?: User[];
 }
 
 // 1. Aggiungi questa nuova interfaccia
 export interface Support {
     id: number;
-    user: User; // Chi ha messo il like/supporto
+    user: User;
 }
 
 export interface Tag {

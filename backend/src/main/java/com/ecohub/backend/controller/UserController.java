@@ -35,4 +35,15 @@ public class UserController {
     public User getUserProfile(@PathVariable Long id) {
         return userService.getUserById(id);
     }
+
+    @PutMapping("/{id}/picture")
+    public ResponseEntity<?> updateProfilePicture(@PathVariable Long id, @RequestBody String base64Image) {
+        userService.updateProfilePicture(id, base64Image);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/search")
+    public List<User> search(@RequestParam String query) {
+        return userService.searchUsers(query);
+    }
 }

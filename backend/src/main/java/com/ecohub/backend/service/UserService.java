@@ -53,4 +53,14 @@ public class UserService {
     public User getUserById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException("Utente non trovato"));
     }
+
+    public User updateProfilePicture(Long userId, String base64Image) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        user.setProfilePicture(base64Image);
+        return userRepository.save(user);
+    }
+
+    public List<User> searchUsers(String query) {
+        return userRepository.findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query);
+    }
 }

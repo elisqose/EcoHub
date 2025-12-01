@@ -31,7 +31,6 @@ export default function LoginPage() {
             alignItems: 'center', 
             height: '100vh', 
             backgroundColor: '#f0f2f5',
-            fontFamily: 'Arial, sans-serif'
         }}>
             <div style={{ 
                 padding: '40px', 

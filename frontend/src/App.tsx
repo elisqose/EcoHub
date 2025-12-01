@@ -4,27 +4,22 @@ import HomePage from './pages/HomePage';
 import CreatePostPage from './pages/CreatePostPage';
 import ModeratorPage from './pages/ModeratorPage';
 import UserProfilePage from './pages/UserProfilePage';
-import MessagesPage from './pages/MessagesPage'; // <--- 1. Importiamo la nuova pagina dei messaggi
+import MessagesPage from './pages/MessagesPage'; //
+import SearchUsersPage from './pages/SearchUsersPage'; //
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Redirect iniziale */}
                 <Route path="/" element={<Navigate to="/login" />} />
-
-                {/* Pagine esistenti */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/feed" element={<HomePage />} />
                 <Route path="/create-post" element={<CreatePostPage />} />
                 <Route path="/moderation" element={<ModeratorPage />} />
+                <Route path="/profile/:id" element={<UserProfilePage />} />
                 <Route path="/profile" element={<UserProfilePage />} />
-
-                {/* --- 2. Aggiungiamo la rotta per i messaggi --- */}
                 <Route path="/messages" element={<MessagesPage />} />
-                {/* --------------------------------------------- */}
-
-                {/* Fallback per rotte sconosciute */}
+                <Route path="/search-users" element={<SearchUsersPage />} />
                 <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
         </BrowserRouter>

@@ -9,7 +9,6 @@ export default function Navbar({ user }: NavbarProps) {
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        // Rimuoviamo l'utente salvato e torniamo alla home/login
         localStorage.removeItem('user');
         navigate('/');
     };
@@ -34,10 +33,11 @@ export default function Navbar({ user }: NavbarProps) {
                     onClick={() => navigate('/feed')}
                     title="Torna alla Home"
                 >
-                    EcoHub 🌱
+                    {/* --- MODIFICA QUI: Aggiunta la fogliolina prima del nome --- */}
+                    🌱 EcoHub
                 </h2>
 
-                {/* Mostra questo bottone SOLO se l'utente è un Moderatore */}
+                {/* Tasto Moderatore (Solo se admin) */}
                 {user?.role === 'MODERATOR' && (
                     <button
                         onClick={() => navigate('/moderation')}
@@ -63,7 +63,26 @@ export default function Navbar({ user }: NavbarProps) {
             {/* DESTRA: Azioni Utente */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
 
-                {/* Bottone Crea Nuovo Post */}
+                {/* Cerca */}
+                <button
+                    onClick={() => navigate('/search-users')}
+                    style={{
+                        backgroundColor: 'transparent',
+                        color: '#555',
+                        border: '1px solid #ccc',
+                        padding: '8px 15px',
+                        borderRadius: '20px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                    }}
+                >
+                    🔍 Cerca
+                </button>
+
+                {/* Nuovo Post */}
                 <button
                     onClick={() => navigate('/create-post')}
                     style={{
@@ -80,12 +99,12 @@ export default function Navbar({ user }: NavbarProps) {
                     + Nuovo Post
                 </button>
 
-                {/* --- NUOVO TASTO MESSAGGI --- */}
+                {/* Messaggi */}
                 <button
                     onClick={() => navigate('/messages')}
                     style={{
-                        backgroundColor: '#e8f5e9', // Verde chiarissimo
-                        color: '#2e7d32',           // Testo verde scuro
+                        backgroundColor: '#e8f5e9',
+                        color: '#2e7d32',
                         border: 'none',
                         padding: '8px 15px',
                         borderRadius: '20px',
@@ -95,13 +114,11 @@ export default function Navbar({ user }: NavbarProps) {
                         alignItems: 'center',
                         gap: '5px'
                     }}
-                    title="Vai ai messaggi"
                 >
                     📩 Messaggi
                 </button>
-                {/* ---------------------------- */}
 
-                {/* Link al Profilo (Cliccabile) */}
+                {/* Profilo Utente (Con Foto) */}
                 <div
                     onClick={() => navigate('/profile')}
                     style={{
@@ -113,28 +130,40 @@ export default function Navbar({ user }: NavbarProps) {
                         borderRadius: '20px',
                         transition: 'background-color 0.2s'
                     }}
-                    title="Vai al tuo profilo personale"
+                    title="Vai al tuo profilo"
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f8e9'}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                     <span style={{ color: '#555', fontSize: '14px' }}>Ciao, <b>{user?.username}</b></span>
+
+                    {/* AVATAR: Immagine o Iniziale */}
                     <div style={{
                         width: '32px',
                         height: '32px',
-                        backgroundColor: '#2e7d32',
                         borderRadius: '50%',
+                        backgroundColor: '#2e7d32',
                         color: 'white',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: '14px',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        overflow: 'hidden',
+                        border: '1px solid #e8f5e9'
                     }}>
-                        {user?.username ? user.username.charAt(0).toUpperCase() : '?'}
+                        {user?.profilePicture ? (
+                            <img
+                                src={user.profilePicture}
+                                alt="avatar"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                        ) : (
+                            user?.username ? user.username.charAt(0).toUpperCase() : '?'
+                        )}
                     </div>
                 </div>
 
-                {/* Bottone Esci */}
+                {/* Logout */}
                 <button
                     onClick={handleLogout}
                     style={{
@@ -146,7 +175,6 @@ export default function Navbar({ user }: NavbarProps) {
                         color: '#666',
                         fontSize: '14px'
                     }}
-                    title="Disconnetti"
                 >
                     Esci
                 </button>

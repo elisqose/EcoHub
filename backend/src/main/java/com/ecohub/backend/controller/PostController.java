@@ -12,15 +12,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/posts")
 @CrossOrigin(origins = "*")
-
 public class PostController {
     @Autowired
     private ContentService contentService;
 
+    // ... (metodi esistenti getFeed, getPost, createPost)
     @GetMapping
     public List<Post> getFeed(@RequestParam(required = false) String tag) {
         if (tag != null && !tag.isEmpty()) {
-            // Chiama il service filtrando per tag
             return contentService.getPostsByTag(tag);
         }
         return contentService.getPublicFeed();
@@ -36,6 +35,20 @@ public class PostController {
         return contentService.createPost(post, userId, tags);
     }
 
+    // --- NUOVO: Update ---
+    @PutMapping("/{id}")
+    public Post updatePost(@PathVariable Long id, @RequestParam Long userId, @RequestBody Post post) {
+        return contentService.updatePost(id, userId, post);
+    }
+
+    // --- NUOVO: Delete ---
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletePost(@PathVariable Long id, @RequestParam Long userId) {
+        contentService.deletePost(id, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    // ... (metodi esistenti addComment, supportPost, getUserPosts)
     @PostMapping("/{id}/comments")
     public Comment addComment(@PathVariable Long id, @RequestParam Long userId, @RequestBody String text) {
         return contentService.addComment(id, userId, text);

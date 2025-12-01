@@ -19,13 +19,19 @@ public class MessageService {
     @Autowired
     private UserRepository userRepository;
 
-    // Metodo per inviare un messaggio
-    public Message sendMessage(Long senderId, Long receiverId, String content) {
+    // --- MODIFICA QUI: Ora accetta String receiverUsername invece di Long receiverId ---
+    public Message sendMessage(Long senderId, String receiverUsername, String content) {
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new RuntimeException("Mittente non trovato"));
 
-        User receiver = userRepository.findById(receiverId)
-                .orElseThrow(() -> new RuntimeException("Destinatario non trovato"));
+        // Cerchiamo il destinatario per username
+        User receiver = userRepository.findByUsername(receiverUsername)
+                .orElseThrow(() -> new RuntimeException("Destinatario non trovato: " + receiverUsername));
+
+        // Impediamo di inviare messaggi a se stessi (opzionale ma consigliato)
+        if (sender.getId().equals(receiver.getId())) {
+            throw new RuntimeException("Non puoi inviarti messaggi da solo.");
+        }
 
         Message message = new Message();
         message.setSender(sender);
@@ -36,9 +42,7 @@ public class MessageService {
         return messageRepository.save(message);
     }
 
-    // Metodo per leggere i messaggi ricevuti da un utente
     public List<Message> getMessagesForUser(Long userId) {
-        // Verifica se l'utente esiste (opzionale, ma buona pratica)
         if (!userRepository.existsById(userId)) {
             throw new RuntimeException("Utente non trovato");
         }
