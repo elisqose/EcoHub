@@ -1,27 +1,44 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import Navbar from '../components/Navbar';
 import type { Message, User } from '../types';
 
 export default function MessagesPage() {
+    const location = useLocation();
+
+    // Stati per la gestione della vista
     const [activeTab, setActiveTab] = useState<'INBOX' | 'OUTBOX'>('INBOX');
     const [messages, setMessages] = useState<Message[]>([]);
 
-    // Form invio
+    // Stati per il form di invio
     const [receiverUsername, setReceiverUsername] = useState('');
     const [content, setContent] = useState('');
 
+    // Stati di feedback
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
+    // Recupero utente corrente
     const userString = localStorage.getItem('user');
     const currentUser: User | null = userString ? JSON.parse(userString) : null;
 
+    // EFFETTO 1: Gestione arrivo da "Contatta" (UserProfilePage)
+    useEffect(() => {
+        // Se c'è uno stato nella navigazione (es. clic su Contatta)
+        if (location.state && location.state.targetUsername) {
+            setReceiverUsername(location.state.targetUsername);
+            // Pulisce lo state per evitare che il campo si riempia di nuovo se l'utente ricarica
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
+
+    // EFFETTO 2: Caricamento messaggi al cambio Tab o Utente
     useEffect(() => {
         if (currentUser) {
             loadMessages();
         }
-    }, [activeTab]);
+    }, [activeTab, currentUser]); // Aggiunto currentUser alle dipendenze
 
     const loadMessages = async () => {
         if (!currentUser) return;
@@ -53,9 +70,7 @@ export default function MessagesPage() {
             await api.sendMessage(currentUser.id, receiverUsername.trim(), content);
             setSuccess("Messaggio inviato!");
             setContent('');
-            // Se eravamo in risposta, svuotiamo anche il destinatario per evitare invii doppi accidentali
-            // setReceiverUsername(''); // Decommenta se preferisci che si svuoti
-
+            // Se siamo in OUTBOX, ricarichiamo per vedere il messaggio appena inviato
             if (activeTab === 'OUTBOX') loadMessages();
         } catch (err) {
             console.error(err);
@@ -73,19 +88,15 @@ export default function MessagesPage() {
         }
     };
 
-    // --- NUOVA FUNZIONE: RISPONDI ---
+    // Funzione "Rispondi" (interna alla pagina)
     const handleReply = (username: string) => {
-        // 1. Imposta il destinatario
         setReceiverUsername(username);
-        // 2. Resetta eventuali errori/successi precedenti
         setError(null);
         setSuccess(null);
-        // 3. Scrolla in alto verso il form
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        // 4. (Opzionale) Mette il focus sul campo testo (richiede un ref, ma lo scroll è sufficiente per ora)
     };
 
-    // Logica Moderatore
+    // Logica Moderatore (Approva/Rifiuta richiesta ruolo)
     const handleModerationAction = async (msgId: number, msgContent: string, action: 'PROMOTE' | 'REJECT') => {
         const match = msgContent.match(/@(\w+)/);
         if (!match || !match[1]) return alert("Username non trovato nel messaggio.");
@@ -100,33 +111,41 @@ export default function MessagesPage() {
                 await api.rejectUser(targetUsername);
                 alert(`Richiesta di ${targetUsername} rifiutata.`);
             }
+            // Dopo l'azione, cancelliamo il messaggio di richiesta per pulizia
             handleDelete(msgId);
         } catch (err) {
             alert("Errore durante l'operazione.");
         }
     };
 
-    if (!currentUser) return <p>Accesso negato</p>;
+    if (!currentUser) return (
+        <div style={{ padding: '40px', textAlign: 'center' }}>
+            <p>Devi effettuare il login.</p>
+            <a href="/login" style={{ color: '#2e7d32', fontWeight: 'bold' }}>Vai al login</a>
+        </div>
+    );
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
             <Navbar user={currentUser} />
 
             <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-                <h1 style={{ color: '#2e7d32', textAlign: 'center' }}>Messaggistica 📬</h1>
+                <h1 style={{ color: '#2e7d32', textAlign: 'center', marginBottom: '20px' }}>Messaggistica 📬</h1>
 
                 {/* FORM INVIO */}
                 <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                    <h3 style={{ margin: '0 0 10px 0' }}>Scrivi Nuovo Messaggio</h3>
-                    {error && <p style={{ color: 'red' }}>{error}</p>}
-                    {success && <p style={{ color: 'green' }}>{success}</p>}
+                    <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#333' }}>Scrivi Nuovo Messaggio</h3>
+
+                    {error && <div style={{ color: '#c62828', backgroundColor: '#ffebee', padding: '8px', borderRadius: '4px', marginBottom: '10px' }}>{error}</div>}
+                    {success && <div style={{ color: '#2e7d32', backgroundColor: '#e8f5e9', padding: '8px', borderRadius: '4px', marginBottom: '10px' }}>{success}</div>}
+
                     <form onSubmit={handleSend} style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
                         <input
                             type="text"
                             placeholder="A: Username destinatario"
                             value={receiverUsername}
                             onChange={e => setReceiverUsername(e.target.value)}
-                            style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}
+                            style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '16px' }}
                             required
                         />
                         <textarea
@@ -134,23 +153,24 @@ export default function MessagesPage() {
                             placeholder="Testo del messaggio..."
                             value={content}
                             onChange={e => setContent(e.target.value)}
-                            style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '4px', fontFamily: 'inherit' }}
+                            style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '4px', fontFamily: 'inherit', fontSize: '16px' }}
                             required
                         />
-                        <button type="submit" style={{ backgroundColor: '#2e7d32', color: 'white', padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                        <button type="submit" style={{ backgroundColor: '#2e7d32', color: 'white', padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
                             Invia Messaggio ✈️
                         </button>
                     </form>
                 </div>
 
-                {/* TABS */}
+                {/* TABS (Inbox / Outbox) */}
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
                     <button
                         onClick={() => setActiveTab('INBOX')}
                         style={{
                             flex: 1, padding: '10px', cursor: 'pointer', border: 'none', borderRadius: '4px', fontWeight: 'bold',
                             backgroundColor: activeTab === 'INBOX' ? '#2e7d32' : '#e0e0e0',
-                            color: activeTab === 'INBOX' ? 'white' : 'black'
+                            color: activeTab === 'INBOX' ? 'white' : 'black',
+                            transition: 'background-color 0.2s'
                         }}
                     >
                         📥 Posta in Arrivo
@@ -160,7 +180,8 @@ export default function MessagesPage() {
                         style={{
                             flex: 1, padding: '10px', cursor: 'pointer', border: 'none', borderRadius: '4px', fontWeight: 'bold',
                             backgroundColor: activeTab === 'OUTBOX' ? '#2e7d32' : '#e0e0e0',
-                            color: activeTab === 'OUTBOX' ? 'white' : 'black'
+                            color: activeTab === 'OUTBOX' ? 'white' : 'black',
+                            transition: 'background-color 0.2s'
                         }}
                     >
                         📤 Posta Inviata
@@ -169,7 +190,7 @@ export default function MessagesPage() {
 
                 {/* LISTA MESSAGGI */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {messages.length === 0 && <p style={{ textAlign: 'center', color: '#888' }}>Nessun messaggio.</p>}
+                    {messages.length === 0 && <p style={{ textAlign: 'center', color: '#888', padding: '20px' }}>Nessun messaggio.</p>}
 
                     {messages.map(msg => {
                         const isModRequest = msg.content.includes("RICHIESTA MODERATORE");
@@ -183,7 +204,7 @@ export default function MessagesPage() {
                                 borderLeft: isModRequest && activeTab === 'INBOX' ? '5px solid #ff9800' : '5px solid #2e7d32',
                                 boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
                             }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', flexWrap: 'wrap' }}>
                                     <strong style={{ color: '#333' }}>
                                         {activeTab === 'INBOX' ? `Da: @${otherUser.username}` : `A: @${otherUser.username}`}
                                     </strong>
@@ -192,11 +213,11 @@ export default function MessagesPage() {
                                     </span>
                                 </div>
 
-                                <p style={{ margin: '10px 0', whiteSpace: 'pre-wrap', color: '#444' }}>{msg.content}</p>
+                                <p style={{ margin: '10px 0', whiteSpace: 'pre-wrap', color: '#444', lineHeight: '1.5' }}>{msg.content}</p>
 
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
 
-                                    {/* Bottoni Admin */}
+                                    {/* BOTTONI ADMIN (Solo se: Inbox, Richiesta Mod, Utente è Mod) */}
                                     {activeTab === 'INBOX' && isModRequest && currentUser.role === 'MODERATOR' && (
                                         <>
                                             <button onClick={() => handleModerationAction(msg.id, msg.content, 'PROMOTE')} style={{ backgroundColor: '#4caf50', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>Accetta</button>
@@ -204,7 +225,7 @@ export default function MessagesPage() {
                                         </>
                                     )}
 
-                                    {/* --- TASTO RISPONDI (Solo in INBOX) --- */}
+                                    {/* TASTO RISPONDI (Solo in Inbox) */}
                                     {activeTab === 'INBOX' && (
                                         <button
                                             onClick={() => handleReply(otherUser.username)}

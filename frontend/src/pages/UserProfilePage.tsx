@@ -111,8 +111,8 @@ export default function UserProfilePage() {
     // --- AZIONE: CONTATTA ---
     const handleContact = () => {
         if (!profileUser) return;
-        navigate('/messages');
-        alert(`Copia questo username per scrivergli: ${profileUser.username}`);
+        // MODIFICA: Invece dell'alert, navighiamo passando lo username nello "state"
+        navigate('/messages', { state: { targetUsername: profileUser.username } });
     };
 
     // --- AZIONE: SALVA BIO ---
