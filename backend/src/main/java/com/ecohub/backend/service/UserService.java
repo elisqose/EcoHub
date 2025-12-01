@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserService {
@@ -44,14 +43,30 @@ public class UserService {
         }
     }
 
+    // Metodo base per inviare messaggi (usato anche internamente per le notifiche admin)
     public Message sendMessage(Long senderId, Long receiverId, String content) {
-        User sender = userRepository.findById(senderId).orElseThrow();
-        User receiver = userRepository.findById(receiverId).orElseThrow();
+        User sender = userRepository.findById(senderId).orElseThrow(() -> new RuntimeException("Mittente non trovato"));
+        User receiver = userRepository.findById(receiverId).orElseThrow(() -> new RuntimeException("Destinatario non trovato"));
+
         Message msg = new Message(null, content, LocalDateTime.now(), sender, receiver);
         return messageRepository.save(msg);
     }
 
-    // --- NUOVO METODO: Richiesta Moderazione ---
+    // --- METODI CORRETTI PER I MESSAGGI (FIX ERRORE) ---
+
+    // Recupera SOLO i messaggi ricevuti (Posta in Arrivo)
+    public List<Message> getInbox(Long userId) {
+        return messageRepository.findByReceiver_IdOrderByTimestampDesc(userId);
+    }
+
+    // Recupera SOLO i messaggi inviati (Posta Inviata)
+    public List<Message> getOutbox(Long userId) {
+        // Assicurati di aver aggiunto findBySender_IdOrderByTimestampDesc nel MessageRepository come indicato prima!
+        return messageRepository.findBySender_IdOrderByTimestampDesc(userId);
+    }
+
+    // --- FINE FIX ---
+
     public void requestModeration(String username, String motivation) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Utente non trovato: " + username));
@@ -62,11 +77,6 @@ public class UserService {
         String content = "RICHIESTA MODERATORE\n\nL'utente @" + username + " chiede di diventare moderatore.\n\nMotivazione:\n" + motivation;
 
         sendMessage(user.getId(), admin.getId(), content);
-    }
-
-    public List<Message> getInbox(Long userId) {
-        // Questo metodo corrisponde esattamente a quello nel MessageRepository
-        return messageRepository.findByReceiver_IdOrderByTimestampDesc(userId);
     }
 
     public User getUserById(Long id) {
@@ -90,7 +100,6 @@ public class UserService {
         user.setRole(UserRole.MODERATOR);
         userRepository.save(user);
 
-        // Opzionale: Invia notifica di conferma
         User admin = userRepository.findByUsername("admin").orElse(null);
         if (admin != null) {
             sendMessage(admin.getId(), user.getId(), "✅ Congratulazioni! La tua richiesta è stata accettata. Ora sei un Moderatore.");
@@ -104,11 +113,9 @@ public class UserService {
         User admin = userRepository.findByUsername("admin")
                 .orElseThrow(() -> new RuntimeException("Admin non trovato"));
 
-        // Inviamo il messaggio di rifiuto
         sendMessage(admin.getId(), user.getId(), "❌ Ciao " + username + ", ci dispiace informarti che la tua richiesta per diventare Moderatore non è stata accettata al momento.");
     }
 
-    // --- NUOVO METODO: Necessario per il tasto "Rifiuta (Elimina)" ---
     public void deleteMessage(Long messageId) {
         messageRepository.deleteById(messageId);
     }

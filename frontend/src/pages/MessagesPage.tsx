@@ -3,14 +3,17 @@ import { api } from '../services/api';
 import Navbar from '../components/Navbar';
 import type { Message, User } from '../types';
 
-const MessagesPage: React.FC = () => {
+export default function MessagesPage() {
+    const [activeTab, setActiveTab] = useState<'INBOX' | 'OUTBOX'>('INBOX');
     const [messages, setMessages] = useState<Message[]>([]);
-    const [receiverUsername, setReceiverUsername] = useState<string>('');
-    const [content, setContent] = useState<string>('');
+
+    // Form invio
+    const [receiverUsername, setReceiverUsername] = useState('');
+    const [content, setContent] = useState('');
+
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
-    // Recupero utente loggato
     const userString = localStorage.getItem('user');
     const currentUser: User | null = userString ? JSON.parse(userString) : null;
 
@@ -18,14 +21,17 @@ const MessagesPage: React.FC = () => {
         if (currentUser) {
             loadMessages();
         }
-    }, []);
+    }, [activeTab]);
 
     const loadMessages = async () => {
         if (!currentUser) return;
         try {
-            // Nota: getReceivedMessages ora dovrebbe essere aggiornato nel backend
-            // per restituire TUTTA la conversazione (inviati + ricevuti) tramite messageService.getMessagesForUser
-            const data = await api.getReceivedMessages(currentUser.id);
+            let data = [];
+            if (activeTab === 'INBOX') {
+                data = await api.getReceivedMessages(currentUser.id);
+            } else {
+                data = await api.getSentMessages(currentUser.id);
+            }
             setMessages(data);
         } catch (err) {
             console.error("Errore caricamento messaggi", err);
@@ -37,10 +43,7 @@ const MessagesPage: React.FC = () => {
         setError(null);
         setSuccess(null);
 
-        if (!currentUser) {
-            setError("Devi essere loggato.");
-            return;
-        }
+        if (!currentUser) return;
         if (!receiverUsername.trim() || !content.trim()) {
             setError("Compila tutti i campi!");
             return;
@@ -48,172 +51,192 @@ const MessagesPage: React.FC = () => {
 
         try {
             await api.sendMessage(currentUser.id, receiverUsername.trim(), content);
-            setSuccess("Inviato!");
+            setSuccess("Messaggio inviato!");
             setContent('');
-            // Non resettiamo receiverUsername così puoi continuare a scrivere alla stessa persona
-            loadMessages();
+            // Se eravamo in risposta, svuotiamo anche il destinatario per evitare invii doppi accidentali
+            // setReceiverUsername(''); // Decommenta se preferisci che si svuoti
+
+            if (activeTab === 'OUTBOX') loadMessages();
         } catch (err) {
             console.error(err);
-            setError("Impossibile inviare. Controlla lo username.");
+            setError("Impossibile inviare. Utente non trovato.");
         }
     };
 
-    // Helper eliminazione
-    const deleteMsgHelper = async (msgId: number) => {
-        await api.deleteMessage(msgId);
-        setMessages(prev => prev.filter(m => m.id !== msgId));
+    const handleDelete = async (msgId: number) => {
+        if (!confirm("Vuoi cancellare questo messaggio?")) return;
+        try {
+            await api.deleteMessage(msgId);
+            setMessages(prev => prev.filter(m => m.id !== msgId));
+        } catch (err) {
+            alert("Errore eliminazione");
+        }
     };
 
-    // Logica Approvazione
-    const handlePromote = async (msgId: number, msgContent: string) => {
+    // --- NUOVA FUNZIONE: RISPONDI ---
+    const handleReply = (username: string) => {
+        // 1. Imposta il destinatario
+        setReceiverUsername(username);
+        // 2. Resetta eventuali errori/successi precedenti
+        setError(null);
+        setSuccess(null);
+        // 3. Scrolla in alto verso il form
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // 4. (Opzionale) Mette il focus sul campo testo (richiede un ref, ma lo scroll è sufficiente per ora)
+    };
+
+    // Logica Moderatore
+    const handleModerationAction = async (msgId: number, msgContent: string, action: 'PROMOTE' | 'REJECT') => {
         const match = msgContent.match(/@(\w+)/);
-        if (match && match[1]) {
-            const username = match[1];
-            if (!confirm(`Promuovere ${username} a Moderatore?`)) return;
+        if (!match || !match[1]) return alert("Username non trovato nel messaggio.");
 
-            try {
-                await api.promoteUser(username);
-                alert(`Utente ${username} promosso!`);
-                await deleteMsgHelper(msgId);
-            } catch (err) {
-                alert("Errore durante la promozione.");
+        const targetUsername = match[1];
+
+        try {
+            if (action === 'PROMOTE') {
+                await api.promoteUser(targetUsername);
+                alert(`Utente ${targetUsername} promosso!`);
+            } else {
+                await api.rejectUser(targetUsername);
+                alert(`Richiesta di ${targetUsername} rifiutata.`);
             }
-        } else {
-            alert("Username non trovato.");
+            handleDelete(msgId);
+        } catch (err) {
+            alert("Errore durante l'operazione.");
         }
     };
 
-    // Logica Rifiuto
-    const handleReject = async (msgId: number, msgContent: string) => {
-        const match = msgContent.match(/@(\w+)/);
-        if (match && match[1]) {
-            const username = match[1];
-            if (!confirm(`Vuoi rifiutare la richiesta di ${username}?`)) return;
-
-            try {
-                await api.rejectUser(username);
-                alert("Richiesta rifiutata.");
-                await deleteMsgHelper(msgId);
-            } catch (err) {
-                alert("Errore durante il rifiuto.");
-            }
-        } else {
-            if(confirm("Impossibile trovare il nome utente. Vuoi solo cancellare il messaggio?")) {
-                await deleteMsgHelper(msgId);
-            }
-        }
-    };
-
-    if (!currentUser) return (
-        <div style={{ padding: '40px', textAlign: 'center' }}>
-            <p>Devi effettuare il login.</p>
-            <a href="/login">Vai al login</a>
-        </div>
-    );
+    if (!currentUser) return <p>Accesso negato</p>;
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
             <Navbar user={currentUser} />
 
             <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-                <h1 style={{ color: '#2e7d32', textAlign: 'center', marginBottom: '20px' }}>Messaggi 📩</h1>
+                <h1 style={{ color: '#2e7d32', textAlign: 'center' }}>Messaggistica 📬</h1>
 
-                {/* AREA DI SCRITTURA */}
-                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '30px' }}>
-                    <h2 style={{ fontSize: '18px', margin: '0 0 15px 0', color: '#333' }}>✍️ Scrivi un nuovo messaggio</h2>
-                    {error && <p style={{color:'red', fontSize:'14px'}}>{error}</p>}
-                    {success && <p style={{color:'green', fontSize:'14px'}}>{success}</p>}
-
-                    <form onSubmit={handleSend} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                        <div style={{flex: 1}}>
-                            <input
-                                type="text"
-                                placeholder="Username destinatario"
-                                value={receiverUsername}
-                                onChange={e => setReceiverUsername(e.target.value)}
-                                style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', marginBottom: '10px', boxSizing: 'border-box' }}
-                                required
-                            />
-                            <textarea
-                                rows={2}
-                                placeholder="Scrivi qui..."
-                                value={content}
-                                onChange={e => setContent(e.target.value)}
-                                style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }}
-                                required
-                            />
-                        </div>
-                        <button type="submit" style={{ backgroundColor: '#2e7d32', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', height: 'fit-content' }}>
-                            Invia
+                {/* FORM INVIO */}
+                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                    <h3 style={{ margin: '0 0 10px 0' }}>Scrivi Nuovo Messaggio</h3>
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
+                    {success && <p style={{ color: 'green' }}>{success}</p>}
+                    <form onSubmit={handleSend} style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
+                        <input
+                            type="text"
+                            placeholder="A: Username destinatario"
+                            value={receiverUsername}
+                            onChange={e => setReceiverUsername(e.target.value)}
+                            style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}
+                            required
+                        />
+                        <textarea
+                            rows={3}
+                            placeholder="Testo del messaggio..."
+                            value={content}
+                            onChange={e => setContent(e.target.value)}
+                            style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '4px', fontFamily: 'inherit' }}
+                            required
+                        />
+                        <button type="submit" style={{ backgroundColor: '#2e7d32', color: 'white', padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                            Invia Messaggio ✈️
                         </button>
                     </form>
                 </div>
 
-                {/* LISTA MESSAGGI (Chat Style) */}
-                <div>
-                    <h2 style={{ color: '#333', borderBottom: '2px solid #2e7d32', paddingBottom: '10px', marginBottom: '20px' }}>Conversazioni</h2>
+                {/* TABS */}
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                    <button
+                        onClick={() => setActiveTab('INBOX')}
+                        style={{
+                            flex: 1, padding: '10px', cursor: 'pointer', border: 'none', borderRadius: '4px', fontWeight: 'bold',
+                            backgroundColor: activeTab === 'INBOX' ? '#2e7d32' : '#e0e0e0',
+                            color: activeTab === 'INBOX' ? 'white' : 'black'
+                        }}
+                    >
+                        📥 Posta in Arrivo
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('OUTBOX')}
+                        style={{
+                            flex: 1, padding: '10px', cursor: 'pointer', border: 'none', borderRadius: '4px', fontWeight: 'bold',
+                            backgroundColor: activeTab === 'OUTBOX' ? '#2e7d32' : '#e0e0e0',
+                            color: activeTab === 'OUTBOX' ? 'white' : 'black'
+                        }}
+                    >
+                        📤 Posta Inviata
+                    </button>
+                </div>
 
-                    {messages.length === 0 ? (
-                        <p style={{ textAlign: 'center', color: '#888', padding: '20px' }}>Nessuna conversazione.</p>
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '50px' }}>
-                            {messages.map((msg) => {
-                                const isSentByMe = msg.sender.id === currentUser.id;
-                                const isModRequest = msg.content.includes("RICHIESTA MODERATORE");
+                {/* LISTA MESSAGGI */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {messages.length === 0 && <p style={{ textAlign: 'center', color: '#888' }}>Nessun messaggio.</p>}
 
-                                // Logica Colore Sfondo: Verde se mio, Giallino se richiesta, Bianco se ricevuto normale
-                                const bgColor = isSentByMe ? '#dcedc8' : (isModRequest ? '#fff8e1' : 'white');
-                                // Logica Bordo Laterale: Nessuno se mio, Arancione se richiesta, Verde se ricevuto
-                                const borderStyle = isSentByMe ? 'none' : (isModRequest ? '5px solid #ff9800' : '5px solid #2e7d32');
+                    {messages.map(msg => {
+                        const isModRequest = msg.content.includes("RICHIESTA MODERATORE");
+                        const otherUser = activeTab === 'INBOX' ? msg.sender : msg.receiver;
 
-                                return (
-                                    <div key={msg.id} style={{
-                                        alignSelf: isSentByMe ? 'flex-end' : 'flex-start',
-                                        backgroundColor: bgColor,
-                                        maxWidth: '75%', // Chat bubbles non a tutta larghezza
-                                        padding: '15px',
-                                        borderRadius: '8px',
-                                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                                        borderLeft: borderStyle,
-                                        position: 'relative'
-                                    }}>
-                                        {/* Header Messaggio */}
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center', gap: '15px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                {/* Mostra avatar solo se non è inviato da me (per pulizia) o sempre se preferisci */}
-                                                {!isSentByMe && (
-                                                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#e8f5e9', color: '#2e7d32', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '12px', overflow: 'hidden', border: '1px solid #ddd' }}>
-                                                        {msg.sender.profilePicture ? <img src={msg.sender.profilePicture} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : msg.sender.username.charAt(0).toUpperCase()}
-                                                    </div>
-                                                )}
-                                                <span style={{ fontWeight: 'bold', color: '#333', fontSize: '14px' }}>
-                                                    {isSentByMe ? 'Tu' : `@${msg.sender.username}`}
-                                                </span>
-                                            </div>
-                                            <span style={{ color: '#888', fontSize: '11px' }}>{new Date(msg.timestamp).toLocaleString()}</span>
-                                        </div>
+                        return (
+                            <div key={msg.id} style={{
+                                backgroundColor: isModRequest && activeTab === 'INBOX' ? '#fff8e1' : 'white',
+                                padding: '15px',
+                                borderRadius: '8px',
+                                borderLeft: isModRequest && activeTab === 'INBOX' ? '5px solid #ff9800' : '5px solid #2e7d32',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                    <strong style={{ color: '#333' }}>
+                                        {activeTab === 'INBOX' ? `Da: @${otherUser.username}` : `A: @${otherUser.username}`}
+                                    </strong>
+                                    <span style={{ fontSize: '12px', color: '#888' }}>
+                                        {new Date(msg.timestamp).toLocaleString()}
+                                    </span>
+                                </div>
 
-                                        {/* Contenuto */}
-                                        <div style={{ color: '#333', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
-                                            {msg.content}
-                                        </div>
+                                <p style={{ margin: '10px 0', whiteSpace: 'pre-wrap', color: '#444' }}>{msg.content}</p>
 
-                                        {/* BOTTONI ADMIN (Solo sui messaggi RICEVUTI che sono richieste) */}
-                                        {!isSentByMe && isModRequest && currentUser.role === 'MODERATOR' && (
-                                            <div style={{ marginTop: '15px', borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: '10px', display: 'flex', gap: '10px' }}>
-                                                <button onClick={() => handlePromote(msg.id, msg.content)} style={{ flex: 1, backgroundColor: '#4caf50', color: 'white', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>✅ Approva</button>
-                                                <button onClick={() => handleReject(msg.id, msg.content)} style={{ flex: 1, backgroundColor: '#ef5350', color: 'white', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>❌ Rifiuta</button>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+
+                                    {/* Bottoni Admin */}
+                                    {activeTab === 'INBOX' && isModRequest && currentUser.role === 'MODERATOR' && (
+                                        <>
+                                            <button onClick={() => handleModerationAction(msg.id, msg.content, 'PROMOTE')} style={{ backgroundColor: '#4caf50', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>Accetta</button>
+                                            <button onClick={() => handleModerationAction(msg.id, msg.content, 'REJECT')} style={{ backgroundColor: '#f44336', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>Rifiuta</button>
+                                        </>
+                                    )}
+
+                                    {/* --- TASTO RISPONDI (Solo in INBOX) --- */}
+                                    {activeTab === 'INBOX' && (
+                                        <button
+                                            onClick={() => handleReply(otherUser.username)}
+                                            style={{
+                                                backgroundColor: 'white',
+                                                border: '1px solid #1976d2',
+                                                color: '#1976d2',
+                                                padding: '5px 12px',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                fontWeight: 'bold',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '5px'
+                                            }}
+                                        >
+                                            ↩️ Rispondi
+                                        </button>
+                                    )}
+
+                                    <button
+                                        onClick={() => handleDelete(msg.id)}
+                                        style={{ backgroundColor: 'transparent', border: '1px solid #d32f2f', color: '#d32f2f', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
+                                    >
+                                        🗑️ Elimina
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>
     );
-};
-
-export default MessagesPage;
+}

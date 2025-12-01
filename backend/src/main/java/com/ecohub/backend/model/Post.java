@@ -36,11 +36,11 @@ public class Post {
     private User author;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    @com.fasterxml.jackson.annotation.JsonIgnore // Importante per evitare loop infiniti se serializzi
+    // 3. RIMOSSO @JsonIgnore qui. Ora i commenti saranno visibili nel feed!
     private List<Comment> comments;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    private List<Support> supports; // Controlla se serve JsonIgnore anche qui
+    private List<Support> supports;
 
     @ManyToMany
     @JoinTable(

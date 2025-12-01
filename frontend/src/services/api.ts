@@ -67,13 +67,22 @@ export const api = {
         });
     },
 
+    deleteComment: async (postId: number, commentId: number, userId: number) => {
+        return request(`/posts/${postId}/comments/${commentId}?userId=${userId}`, {
+            method: 'DELETE'
+        });
+    },
+
     addSupport: async (postId: number, userId: number) => {
         return request(`/posts/${postId}/support?userId=${userId}`, { method: 'POST' });
     },
 
     // --- MESSAGGI ---
     getReceivedMessages: (userId: number) =>
-        request(`/messages/received/${userId}`), // Recupera inviati e ricevuti (se backend aggiornato)
+        request(`/messages/received/${userId}`),
+
+    getSentMessages: (userId: number) =>
+        request(`/messages/sent/${userId}`),
 
     sendMessage: (senderId: number, receiverUsername: string, content: string) =>
         request('/messages/send', {

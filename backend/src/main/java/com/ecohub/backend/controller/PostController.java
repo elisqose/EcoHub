@@ -16,7 +16,7 @@ public class PostController {
     @Autowired
     private ContentService contentService;
 
-    // ... (metodi esistenti getFeed, getPost, createPost)
+    // ... (metodi esistenti: getFeed, getPost, createPost, updatePost, deletePost) ...
     @GetMapping
     public List<Post> getFeed(@RequestParam(required = false) String tag) {
         if (tag != null && !tag.isEmpty()) {
@@ -35,25 +35,38 @@ public class PostController {
         return contentService.createPost(post, userId, tags);
     }
 
-    // --- NUOVO: Update ---
     @PutMapping("/{id}")
     public Post updatePost(@PathVariable Long id, @RequestParam Long userId, @RequestBody Post post) {
         return contentService.updatePost(id, userId, post);
     }
 
-    // --- NUOVO: Delete ---
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePost(@PathVariable Long id, @RequestParam Long userId) {
         contentService.deletePost(id, userId);
         return ResponseEntity.ok().build();
     }
 
-    // ... (metodi esistenti addComment, supportPost, getUserPosts)
+    // --- COMMENTI ---
     @PostMapping("/{id}/comments")
     public Comment addComment(@PathVariable Long id, @RequestParam Long userId, @RequestBody String text) {
         return contentService.addComment(id, userId, text);
     }
 
+    // --- NUOVO ENDPOINT: Elimina commento ---
+    @DeleteMapping("/{postId}/comments/{commentId}")
+    public ResponseEntity<?> deleteComment(
+            @PathVariable Long postId,
+            @PathVariable Long commentId,
+            @RequestParam Long userId) {
+        try {
+            contentService.deleteComment(commentId, userId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ... (metodi esistenti: supportPost, getUserPosts) ...
     @PostMapping("/{id}/support")
     public ResponseEntity<?> supportPost(@PathVariable Long id, @RequestParam Long userId) {
         contentService.addSupport(id, userId);

@@ -9,10 +9,9 @@ import java.util.List;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
-    // Metodo vecchio (solo ricevuti) - Puoi lasciarlo se lo usi ancora
+    // Per la Posta in Arrivo (Inbox)
     List<Message> findByReceiver_IdOrderByTimestampDesc(Long receiverId);
 
-    // --- NUOVO METODO CHE MANCAVA ---
-    // Trova messaggi dove l'utente è Mittente OPPURE Destinatario
-    List<Message> findBySender_IdOrReceiver_IdOrderByTimestampDesc(Long senderId, Long receiverId);
+    // Per la Posta Inviata (Outbox) - AGGIUNTO
+    List<Message> findBySender_IdOrderByTimestampDesc(Long senderId);
 }

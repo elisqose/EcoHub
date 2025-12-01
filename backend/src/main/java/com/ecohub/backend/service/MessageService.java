@@ -19,7 +19,7 @@ public class MessageService {
     @Autowired
     private UserRepository userRepository;
 
-    // Metodo per inviare un messaggio usando lo username del destinatario
+    // Invia messaggio
     public Message sendMessage(Long senderId, String receiverUsername, String content) {
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new RuntimeException("Mittente non trovato"));
@@ -27,7 +27,6 @@ public class MessageService {
         User receiver = userRepository.findByUsername(receiverUsername)
                 .orElseThrow(() -> new RuntimeException("Destinatario non trovato: " + receiverUsername));
 
-        // Controllo anti-auto-messaggio
         if (sender.getId().equals(receiver.getId())) {
             throw new RuntimeException("Non puoi inviarti messaggi da solo.");
         }
@@ -41,16 +40,16 @@ public class MessageService {
         return messageRepository.save(message);
     }
 
-    // --- Recupera l'intera storia (Inviati + Ricevuti) ---
-    public List<Message> getMessagesForUser(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new RuntimeException("Utente non trovato");
-        }
-        // Nota: Assicurati che MessageRepository abbia il metodo findBySender_IdOrReceiver_IdOrderByTimestampDesc
-        return messageRepository.findBySender_IdOrReceiver_IdOrderByTimestampDesc(userId, userId);
+    // Recupera Posta in Arrivo
+    public List<Message> getReceivedMessages(Long userId) {
+        return messageRepository.findByReceiver_IdOrderByTimestampDesc(userId);
     }
 
-    // Metodo per cancellare un messaggio
+    // Recupera Posta Inviata
+    public List<Message> getSentMessages(Long userId) {
+        return messageRepository.findBySender_IdOrderByTimestampDesc(userId);
+    }
+
     public void deleteMessage(Long messageId) {
         messageRepository.deleteById(messageId);
     }

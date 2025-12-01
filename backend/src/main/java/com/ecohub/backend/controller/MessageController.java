@@ -17,15 +17,16 @@ public class MessageController {
     @Autowired
     private MessageService messageService;
 
-    // --- MODIFICA: Endpoint generico per la storia messaggi ---
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<Message>> getMessages(@PathVariable Long userId) {
-        try {
-            List<Message> messages = messageService.getMessagesForUser(userId);
-            return ResponseEntity.ok(messages);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    // Endpoint Posta in Arrivo
+    @GetMapping("/received/{userId}")
+    public ResponseEntity<List<Message>> getReceived(@PathVariable Long userId) {
+        return ResponseEntity.ok(messageService.getReceivedMessages(userId));
+    }
+
+    // Endpoint Posta Inviata
+    @GetMapping("/sent/{userId}")
+    public ResponseEntity<List<Message>> getSent(@PathVariable Long userId) {
+        return ResponseEntity.ok(messageService.getSentMessages(userId));
     }
 
     @PostMapping("/send")
@@ -42,13 +43,6 @@ public class MessageController {
         }
     }
 
-    @Data
-    public static class MessageRequest {
-        private Long senderId;
-        private String receiverUsername;
-        private String content;
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteMessage(@PathVariable Long id) {
         try {
@@ -57,5 +51,12 @@ public class MessageController {
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @Data
+    public static class MessageRequest {
+        private Long senderId;
+        private String receiverUsername;
+        private String content;
     }
 }

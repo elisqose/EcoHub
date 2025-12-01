@@ -117,8 +117,9 @@ export default function PostCard({ post, showActions, onApprove, onReject, isOwn
                 </div>
             )}
 
-            {/* Toolbar Azioni Utente (Supporto) */}
-            {!showActions && !isOwnPost && (
+            {/* Toolbar Azioni Utente (Supporto) - MODIFICATO: Rimosso !isOwnPost */}
+            {/* Ora il pulsante e il contatore si vedono SEMPRE (tranne in moderazione pending) */}
+            {!showActions && (
                 <div style={{ marginTop: '15px', display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <SupportButton post={post} currentUser={currentUser} />
                 </div>
