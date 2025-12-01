@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Aggiungi Link
 import { api } from '../services/api';
 import type { User } from '../types';
 
 export default function LoginPage() {
-
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -13,7 +12,6 @@ export default function LoginPage() {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        
         try {
             const user: User = await api.login(username, password);
             localStorage.setItem('user', JSON.stringify(user));
@@ -25,97 +23,61 @@ export default function LoginPage() {
     };
 
     return (
-        <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '100vh', 
+        <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
             backgroundColor: '#f0f2f5',
+            // Font rimosso qui perché gestito globalmente o di default
         }}>
-            <div style={{ 
-                padding: '40px', 
-                backgroundColor: 'white', 
-                borderRadius: '8px', 
+            <div style={{
+                padding: '40px',
+                backgroundColor: 'white',
+                borderRadius: '8px',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                 width: '100%',
                 maxWidth: '400px'
             }}>
-                <h1 style={{ textAlign: 'center', color: '#2e7d32', marginBottom: '10px' }}>EcoHub 🌱</h1>
+                <h1 style={{ textAlign: 'center', color: '#2e7d32', marginBottom: '10px' }}>🌱 EcoHub</h1>
                 <h2 style={{ textAlign: 'center', color: '#555', marginBottom: '30px', fontSize: '18px' }}>Accedi alla Community</h2>
-                
+
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {/* ... (input username e password rimangono uguali) ... */}
                     <div>
-                        <input 
-                            type="text" 
-                            placeholder="Username" 
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                borderRadius: '4px', 
-                                border: '1px solid #ccc',
-                                boxSizing: 'border-box',
-                                fontSize: '16px'
-                            }}
-                            required
+                        <input
+                            type="text" placeholder="Username" required
+                            value={username} onChange={(e) => setUsername(e.target.value)}
+                            style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box', fontSize: '16px' }}
                         />
                     </div>
                     <div>
-                        <input 
-                            type="password" 
-                            placeholder="Password" 
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            style={{ 
-                                width: '100%', 
-                                padding: '12px', 
-                                borderRadius: '4px', 
-                                border: '1px solid #ccc',
-                                boxSizing: 'border-box',
-                                fontSize: '16px'
-                            }}
-                            required
+                        <input
+                            type="password" placeholder="Password" required
+                            value={password} onChange={(e) => setPassword(e.target.value)}
+                            style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box', fontSize: '16px' }}
                         />
                     </div>
-                    <button 
-                        type="submit" 
-                        style={{ 
-                            padding: '12px', 
-                            backgroundColor: '#2e7d32', 
-                            color: 'white', 
-                            border: 'none', 
-                            borderRadius: '4px', 
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            marginTop: '10px'
-                        }}
-                    >
+                    <button type="submit" style={{ padding: '12px', backgroundColor: '#2e7d32', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', marginTop: '10px' }}>
                         Entra
                     </button>
                 </form>
-                
-                {/* Box Rosso per gli errori */}
-                {error && (
-                    <div style={{ 
-                        marginTop: '20px', 
-                        padding: '10px', 
-                        backgroundColor: '#ffebee', 
-                        color: '#c62828', 
-                        borderRadius: '4px',
-                        textAlign: 'center',
-                        fontSize: '14px',
-                        border: '1px solid #ef9a9a'
-                    }}>
-                        ⚠️ {error}
+
+                {error && <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#ffebee', color: '#c62828', borderRadius: '4px', textAlign: 'center', fontSize: '14px', border: '1px solid #ef9a9a' }}>⚠️ {error}</div>}
+
+                {/* --- MODIFICA QUI: Link di Registrazione e Moderazione --- */}
+                <div style={{ marginTop: '30px', textAlign: 'center', fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div>
+                        <span style={{ color: '#666' }}>Non hai un account? </span>
+                        <Link to="/register" style={{ color: '#2e7d32', fontWeight: 'bold', textDecoration: 'none' }}>Registrati qui</Link>
                     </div>
-                )}
-                
-                <div style={{ marginTop: '30px', textAlign: 'center', fontSize: '12px', color: '#888' }}>
-                    <p>Non hai un account? Registrati tramite Postman:</p>
-                    <code>POST /api/auth/register</code>
+
+                    <div>
+                        <span style={{ color: '#666' }}>Vuoi diventare un moderatore? </span>
+                        <Link to="/moderator-request" style={{ color: '#ff9800', fontWeight: 'bold', textDecoration: 'none' }}>Invia richiesta</Link>
+                    </div>
                 </div>
+                {/* ----------------------------------------------------- */}
             </div>
         </div>
     );

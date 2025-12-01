@@ -12,23 +12,17 @@ export default function HomePage() {
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // CORREZIONE LOOP: Inizializziamo lo stato leggendo il localStorage una volta sola
     const [user] = useState<User | null>(() => {
         const stored = localStorage.getItem('user');
         return stored ? JSON.parse(stored) : null;
     });
 
     useEffect(() => {
-        // Se non c'è utente, rimanda al login
         if (!user) {
             navigate('/login');
             return;
         }
-
         fetchPosts();
-
-        // CORREZIONE LOOP: Rimosso 'user' dalle dipendenze perché ora è stabile
-        // Ricarichiamo solo se cambia il tag selezionato
     }, [selectedTag, navigate]);
 
     const fetchPosts = async () => {
@@ -52,12 +46,16 @@ export default function HomePage() {
     if (!user) return null;
 
     return (
+        // NOTA: Qui NON c'è fontFamily: 'Arial...', quindi usa il font di default (Times New Roman)
         <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
             <Navbar user={user} />
 
             <div style={{ maxWidth: '700px', margin: '0 auto', padding: '20px' }}>
                 <div style={{ marginBottom: '20px' }}>
-                    <h1 style={{ color: '#2e7d32', marginBottom: '5px' }}>Ciao, {user.username}! 👋</h1>
+                    {/* --- MODIFICA QUI: Aggiunto textTransform: 'capitalize' --- */}
+                    <h1 style={{ color: '#2e7d32', marginBottom: '5px', textTransform: 'capitalize' }}>
+                        Ciao, {user.username}! 👋
+                    </h1>
                     <p style={{ color: '#666' }}>Ecco cosa succede nella community EcoHub oggi.</p>
                 </div>
 

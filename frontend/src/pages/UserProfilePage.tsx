@@ -113,7 +113,7 @@ export default function UserProfilePage() {
     const rejectedPosts = isOwnProfile ? posts.filter(p => p.status === 'REJECTED') : [];
 
     return (
-        <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5', fontFamily: 'Arial, sans-serif' }}>
+        <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5'}}>
             <Navbar user={currentUser} />
 
             <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>

@@ -86,6 +86,12 @@ export const api = {
     // UTENTI
     getUserProfile: (id: number) => request(`/users/${id}`),
 
+    requestModeration: (username: string, motivation: string) =>
+        request('/users/request-moderation', {
+            method: 'POST',
+            body: JSON.stringify({ username, motivation })
+        }),
+
     updateProfilePicture: (userId: number, base64Image: string) =>
         request(`/users/${userId}/picture`, {
             method: 'PUT',
@@ -119,4 +125,7 @@ export const api = {
             headers: { 'Content-Type': 'text/plain' }, // Sovrascrive il JSON di default
             body: note
         }),
+
+    promoteUser: (username: string) =>
+        request(`/users/promote/${username}`, { method: 'POST' }),
 };

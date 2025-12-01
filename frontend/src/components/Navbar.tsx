@@ -26,14 +26,13 @@ export default function Navbar({ user }: NavbarProps) {
             zIndex: 1000
         }}>
 
-            {/* SINISTRA: Logo e Bottone Moderazione */}
+            {/* SINISTRA: Logo */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <h2
                     style={{ color: '#2e7d32', margin: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
                     onClick={() => navigate('/feed')}
                     title="Torna alla Home"
                 >
-                    {/* --- MODIFICA QUI: Aggiunta la fogliolina prima del nome --- */}
                     🌱 EcoHub
                 </h2>
 
@@ -134,7 +133,10 @@ export default function Navbar({ user }: NavbarProps) {
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f8e9'}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
-                    <span style={{ color: '#555', fontSize: '14px' }}>Ciao, <b>{user?.username}</b></span>
+                    {/* --- MODIFICA QUI: Aggiunto textTransform: 'capitalize' --- */}
+                    <span style={{ color: '#555', fontSize: '14px', textTransform: 'capitalize' }}>
+                        Ciao, <b>{user?.username}</b>
+                    </span>
 
                     {/* AVATAR: Immagine o Iniziale */}
                     <div style={{

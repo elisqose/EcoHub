@@ -26,7 +26,12 @@ public class UserService {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new RuntimeException("Username già utilizzato! Scegline un altro.");
         }
+        // Impostiamo valori di default
         user.setRole(UserRole.STANDARD);
+        user.setFollowing(new java.util.ArrayList<>());
+        user.setFollowers(new java.util.ArrayList<>());
+        user.setReceivedMessages(new java.util.ArrayList<>());
+
         return userRepository.save(user);
     }
 
@@ -46,6 +51,19 @@ public class UserService {
         return messageRepository.save(msg);
     }
 
+    // --- NUOVO METODO: Richiesta Moderazione ---
+    public void requestModeration(String username, String motivation) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato: " + username));
+
+        User admin = userRepository.findByUsername("admin")
+                .orElseThrow(() -> new RuntimeException("Admin non trovato nel sistema"));
+
+        String content = "RICHIESTA MODERATORE\n\nL'utente @" + username + " chiede di diventare moderatore.\n\nMotivazione:\n" + motivation;
+
+        sendMessage(user.getId(), admin.getId(), content);
+    }
+
     public List<Message> getInbox(Long userId) {
         return messageRepository.findByReceiver_IdOrderByTimestampDesc(userId);
     }
@@ -54,13 +72,27 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException("Utente non trovato"));
     }
 
+    public List<User> searchUsers(String query) {
+        return userRepository.findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query);
+    }
+
     public User updateProfilePicture(Long userId, String base64Image) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Utente non trovato"));
         user.setProfilePicture(base64Image);
         return userRepository.save(user);
     }
 
-    public List<User> searchUsers(String query) {
-        return userRepository.findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query);
+    public void promoteToModerator(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato: " + username));
+
+        user.setRole(UserRole.MODERATOR);
+        userRepository.save(user);
+
+        // Opzionale: Invia notifica di conferma
+        User admin = userRepository.findByUsername("admin").orElse(null);
+        if (admin != null) {
+            sendMessage(admin.getId(), user.getId(), "✅ Congratulazioni! La tua richiesta è stata accettata. Ora sei un Moderatore.");
+        }
     }
 }
