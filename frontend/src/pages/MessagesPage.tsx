@@ -55,26 +55,45 @@ const MessagesPage: React.FC = () => {
         }
     };
 
-    // --- FUNZIONE PER ELIMINARE LOCALMENTE E REMOTAMENTE UN MESSAGGIO ---
+    // --- FUNZIONE PER ELIMINARE (RIFIUTARE) UN MESSAGGIO ---
     const deleteMsgHelper = async (msgId: number) => {
-        await api.deleteMessage(msgId);
-        setMessages(prev => prev.filter(m => m.id !== msgId));
+        if(!confirm("Vuoi davvero rifiutare ed eliminare questo messaggio?")) return;
+        try {
+            await api.deleteMessage(msgId);
+            setMessages(prev => prev.filter(m => m.id !== msgId));
+        } catch (error) {
+            console.error("Errore eliminazione:", error);
+            alert("Impossibile eliminare il messaggio.");
+        }
     };
 
-    // --- LOGICA APPROVAZIONE ---
+    // --- NUOVA FUNZIONE: RISPONDI ---
+    const handleReply = (senderUsername: string) => {
+        // Imposta il destinatario nel form in alto
+        setReceiverUsername(senderUsername);
+        // Pulisce il contenuto precedente
+        setContent('');
+        // Scrolla verso l'alto per mostrare il form
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Feedback visivo opzionale (focus)
+        const inputElement = document.getElementById('msg-content');
+        if(inputElement) inputElement.focus();
+    };
+
+    // --- LOGICA APPROVAZIONE MODERATORE (CORRETTA) ---
     const handlePromote = async (msgId: number, msgContent: string) => {
+        // CORREZIONE QUI:
         const match = msgContent.match(/@(\w+)/);
+
         if (match && match[1]) {
             const username = match[1];
             if(!confirm(`Promuovere ${username} a Moderatore?`)) return;
 
             try {
-                // 1. Promuoviamo l'utente
                 await api.promoteUser(username);
                 alert(`Utente ${username} promosso! Il messaggio verrà archiviato.`);
-
-                // 2. Cancelliamo il messaggio di richiesta (Pulizia Inbox)
-                await deleteMsgHelper(msgId);
+                await api.deleteMessage(msgId);
+                setMessages(prev => prev.filter(m => m.id !== msgId));
             } catch (err) {
                 console.error(err);
                 alert("Errore durante la promozione.");
@@ -84,29 +103,23 @@ const MessagesPage: React.FC = () => {
         }
     };
 
-    // --- LOGICA RIFIUTO ---
-    const handleReject = async (msgId: number, msgContent: string) => {
+    const handleRejectModRequest = async (msgId: number, msgContent: string) => {
         const match = msgContent.match(/@(\w+)/);
         if (match && match[1]) {
             const username = match[1];
             if (!confirm(`Vuoi rifiutare la richiesta di ${username}? Verrà inviata una notifica.`)) return;
 
             try {
-                // 1. Inviamo notifica di rifiuto
                 await api.rejectUser(username);
                 alert("Richiesta rifiutata e notifica inviata.");
-
-                // 2. Cancelliamo il messaggio di richiesta
-                await deleteMsgHelper(msgId);
+                await api.deleteMessage(msgId);
+                setMessages(prev => prev.filter(m => m.id !== msgId));
             } catch (err) {
                 console.error(err);
                 alert("Errore durante il rifiuto.");
             }
         } else {
-            // Se non troviamo il nome, cancelliamo e basta (fallback)
-            if(confirm("Impossibile trovare il nome utente. Vuoi solo cancellare il messaggio?")) {
-                await deleteMsgHelper(msgId);
-            }
+            deleteMsgHelper(msgId);
         }
     };
 
@@ -143,11 +156,26 @@ const MessagesPage: React.FC = () => {
                     <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                         <div>
                             <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px', color: '#555' }}>Destinatario (Username):</label>
-                            <input type="text" placeholder="Es. mario" value={receiverUsername} onChange={(e) => setReceiverUsername(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box' }} required />
+                            <input
+                                type="text"
+                                placeholder="Es. mario"
+                                value={receiverUsername}
+                                onChange={(e) => setReceiverUsername(e.target.value)}
+                                style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+                                required
+                            />
                         </div>
                         <div>
                             <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px', color: '#555' }}>Messaggio:</label>
-                            <textarea rows={4} placeholder="Scrivi qui..." value={content} onChange={(e) => setContent(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box', fontFamily: 'inherit' }} required />
+                            <textarea
+                                id="msg-content"
+                                rows={4}
+                                placeholder="Scrivi qui..."
+                                value={content}
+                                onChange={(e) => setContent(e.target.value)}
+                                style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                                required
+                            />
                         </div>
                         <button type="submit" style={{ backgroundColor: '#2e7d32', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '25px', cursor: 'pointer', fontWeight: 'bold', alignSelf: 'flex-end', boxShadow: '0 2px 5px rgba(46, 125, 50, 0.3)' }}>Invia Messaggio</button>
                     </form>
@@ -188,7 +216,7 @@ const MessagesPage: React.FC = () => {
                                             {msg.content}
                                         </div>
 
-                                        {/* BOTTONI ADMIN */}
+                                        {/* --- BOTTONI ADMIN (SOLO PER MOD REQUEST) --- */}
                                         {isModRequest && currentUser.role === 'MODERATOR' && (
                                             <div style={{ marginTop: '15px', paddingLeft: '42px', display: 'flex', gap: '10px' }}>
                                                 <button
@@ -198,10 +226,46 @@ const MessagesPage: React.FC = () => {
                                                     ✅ Approva
                                                 </button>
                                                 <button
-                                                    onClick={() => handleReject(msg.id, msg.content)}
+                                                    onClick={() => handleRejectModRequest(msg.id, msg.content)}
                                                     style={{ backgroundColor: '#ef5350', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
                                                 >
                                                     ❌ Rifiuta
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {/* --- NUOVI BOTTONI STANDARD (RISPONDI / RIFIUTA) --- */}
+                                        {!isModRequest && (
+                                            <div style={{ marginTop: '15px', paddingLeft: '42px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                                                <button
+                                                    onClick={() => handleReply(msg.sender.username)}
+                                                    style={{
+                                                        backgroundColor: '#fff',
+                                                        border: '1px solid #2e7d32',
+                                                        color: '#2e7d32',
+                                                        padding: '6px 15px',
+                                                        borderRadius: '20px',
+                                                        cursor: 'pointer',
+                                                        fontWeight: 'bold',
+                                                        fontSize: '13px'
+                                                    }}
+                                                >
+                                                    ↩️ Rispondi
+                                                </button>
+                                                <button
+                                                    onClick={() => deleteMsgHelper(msg.id)}
+                                                    style={{
+                                                        backgroundColor: '#fff',
+                                                        border: '1px solid #d32f2f',
+                                                        color: '#d32f2f',
+                                                        padding: '6px 15px',
+                                                        borderRadius: '20px',
+                                                        cursor: 'pointer',
+                                                        fontWeight: 'bold',
+                                                        fontSize: '13px'
+                                                    }}
+                                                >
+                                                    🗑️ Rifiuta
                                                 </button>
                                             </div>
                                         )}
