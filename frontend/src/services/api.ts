@@ -4,23 +4,23 @@ async function request(endpoint: string, options?: RequestInit) {
     const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers: {
-            // Default è JSON, ma può essere sovrascritto da options.headers
             'Content-Type': 'application/json',
             ...options?.headers,
         },
     });
 
     if (!response.ok) {
-        throw new Error(`Errore API: ${response.statusText}`);
+        // Gestione errori più dettagliata se il backend manda un messaggio
+        const errorText = await response.text();
+        throw new Error(errorText || `Errore API: ${response.statusText}`);
     }
 
-    // Gestiamo il caso in cui la risposta sia vuota (es. dopo un delete o un put senza ritorno)
     const text = await response.text();
     return text ? JSON.parse(text) : {};
 }
 
 export const api = {
-    // AUTENTICAZIONE
+    // --- AUTENTICAZIONE ---
     login: (username: string, password: string) =>
         request('/auth/login', {
             method: 'POST',
@@ -33,7 +33,7 @@ export const api = {
             body: JSON.stringify(user)
         }),
 
-    // POSTS
+    // --- POST ---
     getFeed: () => request('/posts'),
 
     getUserPosts: (userId: number) => request(`/posts/user/${userId}`),
@@ -55,12 +55,11 @@ export const api = {
             method: 'DELETE'
         }),
 
-    // TAGS (Nuovo metodo aggiunto per la FilterBar)
+    // --- TAGS ---
     getTags: () => request('/tags'),
 
-    // COMMENTI & SUPPORT
+    // --- COMMENTI & SUPPORTO ---
     addComment: async (postId: number, userId: number, text: string) => {
-        // Qui usiamo fetch diretto o request forzando l'header text/plain
         return request(`/posts/${postId}/comments?userId=${userId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
@@ -72,10 +71,9 @@ export const api = {
         return request(`/posts/${postId}/support?userId=${userId}`, { method: 'POST' });
     },
 
-    // MESSAGGI
-    // --- MODIFICA: Ora prende tutti i messaggi (history) ---
-    getMessages: (userId: number) =>
-        request(`/messages/${userId}`),
+    // --- MESSAGGI ---
+    getReceivedMessages: (userId: number) =>
+        request(`/messages/received/${userId}`), // Recupera inviati e ricevuti (se backend aggiornato)
 
     sendMessage: (senderId: number, receiverUsername: string, content: string) =>
         request('/messages/send', {
@@ -86,25 +84,13 @@ export const api = {
     deleteMessage: (messageId: number) =>
         request(`/messages/${messageId}`, { method: 'DELETE' }),
 
-    // UTENTI
+    // --- UTENTI ---
     getUserProfile: (id: number) => request(`/users/${id}`),
-
-    requestModeration: (username: string, motivation: string) =>
-        request('/users/request-moderation', {
-            method: 'POST',
-            body: JSON.stringify({ username, motivation })
-        }),
-
-    rejectUser: (username: string) =>
-        request(`/users/reject-moderation/${username}`, { method: 'POST' }),
-
-    promoteUser: (username: string) =>
-        request(`/users/promote/${username}`, { method: 'POST' }),
 
     updateProfilePicture: (userId: number, base64Image: string) =>
         request(`/users/${userId}/picture`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'text/plain' }, // Importante per mandare la stringa raw
+            headers: { 'Content-Type': 'text/plain' },
             body: base64Image
         }),
 
@@ -115,7 +101,20 @@ export const api = {
             method: 'POST'
         }),
 
-    // MODERAZIONE
+    // Moderazione Utenti (Richiesta, Promozione, Rifiuto)
+    requestModeration: (username: string, motivation: string) =>
+        request('/users/request-moderation', {
+            method: 'POST',
+            body: JSON.stringify({ username, motivation })
+        }),
+
+    promoteUser: (username: string) =>
+        request(`/users/promote/${username}`, { method: 'POST' }),
+
+    rejectUser: (username: string) =>
+        request(`/users/reject-moderation/${username}`, { method: 'POST' }),
+
+    // --- MODERAZIONE POST ---
     getPendingPosts: () => request('/moderation/pending'),
 
     approvePost: (id: number) =>
@@ -131,7 +130,7 @@ export const api = {
     requestChanges: (id: number, note: string) =>
         request(`/moderation/posts/${id}/request-changes`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'text/plain' }, // Sovrascrive il JSON di default
+            headers: { 'Content-Type': 'text/plain' },
             body: note
         }),
 };

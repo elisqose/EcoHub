@@ -10,6 +10,7 @@ const MessagesPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
+    // Recupero utente loggato
     const userString = localStorage.getItem('user');
     const currentUser: User | null = userString ? JSON.parse(userString) : null;
 
@@ -22,8 +23,9 @@ const MessagesPage: React.FC = () => {
     const loadMessages = async () => {
         if (!currentUser) return;
         try {
-            // --- MODIFICA: Chiamata al nuovo endpoint getMessages (che include inviati e ricevuti) ---
-            const data = await api.getMessages(currentUser.id);
+            // Nota: getReceivedMessages ora dovrebbe essere aggiornato nel backend
+            // per restituire TUTTA la conversazione (inviati + ricevuti) tramite messageService.getMessagesForUser
+            const data = await api.getReceivedMessages(currentUser.id);
             setMessages(data);
         } catch (err) {
             console.error("Errore caricamento messaggi", err);
@@ -46,10 +48,9 @@ const MessagesPage: React.FC = () => {
 
         try {
             await api.sendMessage(currentUser.id, receiverUsername.trim(), content);
-            setSuccess("Messaggio inviato con successo!");
+            setSuccess("Inviato!");
             setContent('');
-            setReceiverUsername('');
-            // Ricaricando, vedremo subito il messaggio inviato nella lista!
+            // Non resettiamo receiverUsername così puoi continuare a scrivere alla stessa persona
             loadMessages();
         } catch (err) {
             console.error(err);
@@ -57,46 +58,33 @@ const MessagesPage: React.FC = () => {
         }
     };
 
+    // Helper eliminazione
     const deleteMsgHelper = async (msgId: number) => {
-        if(!confirm("Vuoi eliminare questo messaggio?")) return;
-        try {
-            await api.deleteMessage(msgId);
-            setMessages(prev => prev.filter(m => m.id !== msgId));
-        } catch (error) {
-            console.error("Errore eliminazione:", error);
-            alert("Impossibile eliminare il messaggio.");
-        }
+        await api.deleteMessage(msgId);
+        setMessages(prev => prev.filter(m => m.id !== msgId));
     };
 
-    const handleReply = (senderUsername: string) => {
-        setReceiverUsername(senderUsername);
-        setContent('');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        const inputElement = document.getElementById('msg-content');
-        if(inputElement) inputElement.focus();
-    };
-
+    // Logica Approvazione
     const handlePromote = async (msgId: number, msgContent: string) => {
         const match = msgContent.match(/@(\w+)/);
         if (match && match[1]) {
             const username = match[1];
-            if(!confirm(`Promuovere ${username} a Moderatore?`)) return;
+            if (!confirm(`Promuovere ${username} a Moderatore?`)) return;
 
             try {
                 await api.promoteUser(username);
-                alert(`Utente ${username} promosso! Il messaggio verrà archiviato.`);
-                await api.deleteMessage(msgId);
-                setMessages(prev => prev.filter(m => m.id !== msgId));
+                alert(`Utente ${username} promosso!`);
+                await deleteMsgHelper(msgId);
             } catch (err) {
-                console.error(err);
                 alert("Errore durante la promozione.");
             }
         } else {
-            alert("Username non trovato nel messaggio.");
+            alert("Username non trovato.");
         }
     };
 
-    const handleRejectModRequest = async (msgId: number, msgContent: string) => {
+    // Logica Rifiuto
+    const handleReject = async (msgId: number, msgContent: string) => {
         const match = msgContent.match(/@(\w+)/);
         if (match && match[1]) {
             const username = match[1];
@@ -105,146 +93,118 @@ const MessagesPage: React.FC = () => {
             try {
                 await api.rejectUser(username);
                 alert("Richiesta rifiutata.");
-                await api.deleteMessage(msgId);
-                setMessages(prev => prev.filter(m => m.id !== msgId));
+                await deleteMsgHelper(msgId);
             } catch (err) {
-                console.error(err);
                 alert("Errore durante il rifiuto.");
             }
         } else {
-            deleteMsgHelper(msgId);
+            if(confirm("Impossibile trovare il nome utente. Vuoi solo cancellare il messaggio?")) {
+                await deleteMsgHelper(msgId);
+            }
         }
     };
 
-    if (!currentUser) {
-        return (
-            <div style={{ padding: '40px', textAlign: 'center' }}>
-                <h2 style={{ color: '#2e7d32' }}>EcoHub 🌱</h2>
-                <p>Devi effettuare il login.</p>
-                <a href="/login" style={{ color: '#2e7d32', fontWeight: 'bold' }}>Vai al login</a>
-            </div>
-        );
-    }
+    if (!currentUser) return (
+        <div style={{ padding: '40px', textAlign: 'center' }}>
+            <p>Devi effettuare il login.</p>
+            <a href="/login">Vai al login</a>
+        </div>
+    );
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
             <Navbar user={currentUser} />
 
             <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
+                <h1 style={{ color: '#2e7d32', textAlign: 'center', marginBottom: '20px' }}>Messaggi 📩</h1>
 
-                <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-                    <h1 style={{ color: '#2e7d32', margin: '0 0 5px 0' }}>Messaggi 📩</h1>
-                    <p style={{ color: '#666' }}>Tutte le tue conversazioni (inviati e ricevuti).</p>
-                </div>
+                {/* AREA DI SCRITTURA */}
+                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '30px' }}>
+                    <h2 style={{ fontSize: '18px', margin: '0 0 15px 0', color: '#333' }}>✍️ Scrivi un nuovo messaggio</h2>
+                    {error && <p style={{color:'red', fontSize:'14px'}}>{error}</p>}
+                    {success && <p style={{color:'green', fontSize:'14px'}}>{success}</p>}
 
-                {/* FORM INVIO */}
-                <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '30px' }}>
-                    <h2 style={{ margin: '0 0 20px 0', fontSize: '18px', borderBottom: '1px solid #eee', paddingBottom: '10px', color: '#333' }}>
-                        ✍️ Scrivi un nuovo messaggio
-                    </h2>
-
-                    {error && <div style={{ backgroundColor: '#ffebee', color: '#c62828', padding: '10px', borderRadius: '4px', marginBottom: '15px' }}>{error}</div>}
-                    {success && <div style={{ backgroundColor: '#e8f5e9', color: '#2e7d32', padding: '10px', borderRadius: '4px', marginBottom: '15px' }}>{success}</div>}
-
-                    <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px', color: '#555' }}>Destinatario (Username):</label>
+                    <form onSubmit={handleSend} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                        <div style={{flex: 1}}>
                             <input
                                 type="text"
-                                placeholder="Es. mario"
+                                placeholder="Username destinatario"
                                 value={receiverUsername}
-                                onChange={(e) => setReceiverUsername(e.target.value)}
-                                style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+                                onChange={e => setReceiverUsername(e.target.value)}
+                                style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', marginBottom: '10px', boxSizing: 'border-box' }}
                                 required
                             />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px', color: '#555' }}>Messaggio:</label>
                             <textarea
-                                id="msg-content"
-                                rows={4}
+                                rows={2}
                                 placeholder="Scrivi qui..."
                                 value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                                onChange={e => setContent(e.target.value)}
+                                style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }}
                                 required
                             />
                         </div>
-                        <button type="submit" style={{ backgroundColor: '#2e7d32', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '25px', cursor: 'pointer', fontWeight: 'bold', alignSelf: 'flex-end', boxShadow: '0 2px 5px rgba(46, 125, 50, 0.3)' }}>Invia Messaggio</button>
+                        <button type="submit" style={{ backgroundColor: '#2e7d32', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', height: 'fit-content' }}>
+                            Invia
+                        </button>
                     </form>
                 </div>
 
-                {/* LISTA MESSAGGI (STORIA) */}
+                {/* LISTA MESSAGGI (Chat Style) */}
                 <div>
-                    <h2 style={{ color: '#333', borderBottom: '2px solid #2e7d32', paddingBottom: '10px', marginBottom: '20px' }}>🕐 Cronologia</h2>
+                    <h2 style={{ color: '#333', borderBottom: '2px solid #2e7d32', paddingBottom: '10px', marginBottom: '20px' }}>Conversazioni</h2>
 
                     {messages.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#666', backgroundColor: 'white', borderRadius: '8px' }}>
-                            <h3>Nessun messaggio 🍃</h3>
-                            <p>Non hai ancora inviato o ricevuto messaggi.</p>
-                        </div>
+                        <p style={{ textAlign: 'center', color: '#888', padding: '20px' }}>Nessuna conversazione.</p>
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '50px' }}>
                             {messages.map((msg) => {
-                                const isModRequest = msg.content.includes("🔴 RICHIESTA MODERATORE 🔴");
-                                const isMine = msg.sender.id === currentUser.id; // Controlliamo se sono il mittente
+                                const isSentByMe = msg.sender.id === currentUser.id;
+                                const isModRequest = msg.content.includes("RICHIESTA MODERATORE");
+
+                                // Logica Colore Sfondo: Verde se mio, Giallino se richiesta, Bianco se ricevuto normale
+                                const bgColor = isSentByMe ? '#dcedc8' : (isModRequest ? '#fff8e1' : 'white');
+                                // Logica Bordo Laterale: Nessuno se mio, Arancione se richiesta, Verde se ricevuto
+                                const borderStyle = isSentByMe ? 'none' : (isModRequest ? '5px solid #ff9800' : '5px solid #2e7d32');
 
                                 return (
                                     <div key={msg.id} style={{
-                                        // Stile dinamico: a destra se mio, a sinistra se ricevuto
-                                        alignSelf: isMine ? 'flex-end' : 'flex-start',
-                                        backgroundColor: isMine ? '#dcedc8' : (isModRequest ? '#fff8e1' : 'white'),
-                                        width: '80%', // Non prendiamo tutta la larghezza per dare effetto chat
-                                        padding: '20px', borderRadius: '8px',
-                                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                                        borderLeft: !isMine ? (isModRequest ? '5px solid #ff9800' : '5px solid #2e7d32') : 'none',
-                                        borderRight: isMine ? '5px solid #2e7d32' : 'none',
-                                        marginLeft: isMine ? 'auto' : '0',
-                                        marginRight: isMine ? '0' : 'auto'
+                                        alignSelf: isSentByMe ? 'flex-end' : 'flex-start',
+                                        backgroundColor: bgColor,
+                                        maxWidth: '75%', // Chat bubbles non a tutta larghezza
+                                        padding: '15px',
+                                        borderRadius: '8px',
+                                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                                        borderLeft: borderStyle,
+                                        position: 'relative'
                                     }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'center' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                {/* Se è mio, scriviamo "Tu", altrimenti mostriamo chi l'ha mandato */}
-                                                <span style={{ fontWeight: 'bold', color: '#333' }}>
-                                                    {isMine ? '📤 Tu' : `@${msg.sender.username}`}
+                                        {/* Header Messaggio */}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center', gap: '15px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                {/* Mostra avatar solo se non è inviato da me (per pulizia) o sempre se preferisci */}
+                                                {!isSentByMe && (
+                                                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#e8f5e9', color: '#2e7d32', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '12px', overflow: 'hidden', border: '1px solid #ddd' }}>
+                                                        {msg.sender.profilePicture ? <img src={msg.sender.profilePicture} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : msg.sender.username.charAt(0).toUpperCase()}
+                                                    </div>
+                                                )}
+                                                <span style={{ fontWeight: 'bold', color: '#333', fontSize: '14px' }}>
+                                                    {isSentByMe ? 'Tu' : `@${msg.sender.username}`}
                                                 </span>
-                                                {isMine && <span style={{fontSize:'12px', color:'#666'}}> ➝ a @{msg.receiver.username}</span>}
                                             </div>
-                                            <span style={{ color: '#999', fontSize: '12px' }}>{new Date(msg.timestamp).toLocaleString()}</span>
+                                            <span style={{ color: '#888', fontSize: '11px' }}>{new Date(msg.timestamp).toLocaleString()}</span>
                                         </div>
 
-                                        <div style={{ color: '#444', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                                        {/* Contenuto */}
+                                        <div style={{ color: '#333', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
                                             {msg.content}
                                         </div>
 
-                                        {/* AZIONI MODERATORE (Solo su messaggi ricevuti) */}
-                                        {!isMine && isModRequest && currentUser.role === 'MODERATOR' && (
-                                            <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
-                                                <button onClick={() => handlePromote(msg.id, msg.content)} style={{ backgroundColor: '#4caf50', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>✅ Approva</button>
-                                                <button onClick={() => handleRejectModRequest(msg.id, msg.content)} style={{ backgroundColor: '#ef5350', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>❌ Rifiuta</button>
+                                        {/* BOTTONI ADMIN (Solo sui messaggi RICEVUTI che sono richieste) */}
+                                        {!isSentByMe && isModRequest && currentUser.role === 'MODERATOR' && (
+                                            <div style={{ marginTop: '15px', borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: '10px', display: 'flex', gap: '10px' }}>
+                                                <button onClick={() => handlePromote(msg.id, msg.content)} style={{ flex: 1, backgroundColor: '#4caf50', color: 'white', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>✅ Approva</button>
+                                                <button onClick={() => handleReject(msg.id, msg.content)} style={{ flex: 1, backgroundColor: '#ef5350', color: 'white', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>❌ Rifiuta</button>
                                             </div>
                                         )}
-
-                                        {/* AZIONI STANDARD */}
-                                        <div style={{ marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                                            {/* Mostra "Rispondi" solo se il messaggio NON è mio */}
-                                            {!isMine && !isModRequest && (
-                                                <button
-                                                    onClick={() => handleReply(msg.sender.username)}
-                                                    style={{ backgroundColor: 'white', border: '1px solid #2e7d32', color: '#2e7d32', padding: '6px 12px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
-                                                >
-                                                    ↩️ Rispondi
-                                                </button>
-                                            )}
-
-                                            {/* Elimina c'è sempre */}
-                                            <button
-                                                onClick={() => deleteMsgHelper(msg.id)}
-                                                style={{ backgroundColor: 'white', border: '1px solid #d32f2f', color: '#d32f2f', padding: '6px 12px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
-                                            >
-                                                🗑️ Elimina
-                                            </button>
-                                        </div>
                                     </div>
                                 );
                             })}
