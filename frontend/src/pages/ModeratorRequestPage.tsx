@@ -23,7 +23,7 @@ export default function ModeratorRequestPage() {
     };
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f2f5', fontFamily: 'Arial, sans-serif' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f2f5'}}>
             <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', width: '100%', maxWidth: '500px' }}>
                 <h2 style={{ textAlign: 'center', color: '#ff9800', marginBottom: '10px' }}>Diventa Moderatore 🛡️</h2>
                 <p style={{ textAlign: 'center', color: '#666', marginBottom: '20px', fontSize: '14px' }}>

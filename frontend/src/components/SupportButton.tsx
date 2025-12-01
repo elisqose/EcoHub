@@ -42,15 +42,19 @@ export default function SupportButton({ post, currentUser }: SupportButtonProps)
         <button
             onClick={handleSupport}
             style={{
-                display: 'flex', alignItems: 'center', gap: '5px',
-                padding: '6px 12px', borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'baseline', // <--- CORRETTO: Allinea il testo e il numero sulla riga di scrittura
+                gap: '5px',
+                padding: '6px 12px',
+                borderRadius: '20px',
                 border: supported ? '1px solid #2e7d32' : '1px solid #ccc',
                 backgroundColor: supported ? '#e8f5e9' : 'white',
                 color: supported ? '#2e7d32' : '#666',
-                cursor: 'pointer', transition: 'all 0.2s'
+                cursor: 'pointer',
+                transition: 'all 0.2s'
             }}
         >
-            {/* FOGLIA VERDE al posto del cuore */}
+            {/* MANTENUTA: FOGLIA VERDE al posto del cuore */}
             {supported ? '🍃 Supportato' : '🍂 Supporta'}
             <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{count}</span>
         </button>
