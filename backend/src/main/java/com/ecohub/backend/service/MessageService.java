@@ -19,16 +19,13 @@ public class MessageService {
     @Autowired
     private UserRepository userRepository;
 
-    // --- MODIFICA QUI: Ora accetta String receiverUsername invece di Long receiverId ---
     public Message sendMessage(Long senderId, String receiverUsername, String content) {
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new RuntimeException("Mittente non trovato"));
 
-        // Cerchiamo il destinatario per username
         User receiver = userRepository.findByUsername(receiverUsername)
                 .orElseThrow(() -> new RuntimeException("Destinatario non trovato: " + receiverUsername));
 
-        // Impediamo di inviare messaggi a se stessi (opzionale ma consigliato)
         if (sender.getId().equals(receiver.getId())) {
             throw new RuntimeException("Non puoi inviarti messaggi da solo.");
         }
@@ -42,11 +39,13 @@ public class MessageService {
         return messageRepository.save(message);
     }
 
+    // --- MODIFICA: Recupera l'intera storia (Inviati + Ricevuti) ---
     public List<Message> getMessagesForUser(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new RuntimeException("Utente non trovato");
         }
-        return messageRepository.findByReceiver_IdOrderByTimestampDesc(userId);
+        // Passiamo l'ID due volte perché cerchiamo (Sender=ID) OR (Receiver=ID)
+        return messageRepository.findBySender_IdOrReceiver_IdOrderByTimestampDesc(userId, userId);
     }
 
     public void deleteMessage(Long messageId) {

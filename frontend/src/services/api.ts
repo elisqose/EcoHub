@@ -73,10 +73,10 @@ export const api = {
     },
 
     // MESSAGGI
-    getReceivedMessages: (userId: number) =>
-        request(`/messages/received/${userId}`),
+    // --- MODIFICA: Ora prende tutti i messaggi (history) ---
+    getMessages: (userId: number) =>
+        request(`/messages/${userId}`),
 
-    // --- MODIFICA QUI: receiverId (number) diventa receiverUsername (string) ---
     sendMessage: (senderId: number, receiverUsername: string, content: string) =>
         request('/messages/send', {
             method: 'POST',

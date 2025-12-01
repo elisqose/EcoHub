@@ -17,8 +17,9 @@ public class MessageController {
     @Autowired
     private MessageService messageService;
 
-    @GetMapping("/received/{userId}")
-    public ResponseEntity<List<Message>> getReceivedMessages(@PathVariable Long userId) {
+    // --- MODIFICA: Endpoint generico per la storia messaggi ---
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<Message>> getMessages(@PathVariable Long userId) {
         try {
             List<Message> messages = messageService.getMessagesForUser(userId);
             return ResponseEntity.ok(messages);
@@ -30,7 +31,6 @@ public class MessageController {
     @PostMapping("/send")
     public ResponseEntity<?> sendMessage(@RequestBody MessageRequest request) {
         try {
-            // --- MODIFICA QUI: Passiamo getReceiverUsername() ---
             Message sentMessage = messageService.sendMessage(
                     request.getSenderId(),
                     request.getReceiverUsername(),
@@ -45,7 +45,6 @@ public class MessageController {
     @Data
     public static class MessageRequest {
         private Long senderId;
-        // --- MODIFICA QUI: Da Long receiverId a String receiverUsername ---
         private String receiverUsername;
         private String content;
     }

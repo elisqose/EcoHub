@@ -8,6 +8,8 @@ import java.util.List;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    // Trova messaggi scambiati tra due utenti o ricevuti da un utente
-    List<Message> findByReceiver_IdOrderByTimestampDesc(Long receiverId);
+
+    // --- NUOVO METODO UNICO PER LA CRONOLOGIA (INVIATI + RICEVUTI) ---
+    // Cerca i messaggi dove l'utente è il mittente (Sender) OPPURE il destinatario (Receiver)
+    List<Message> findBySender_IdOrReceiver_IdOrderByTimestampDesc(Long senderId, Long receiverId);
 }

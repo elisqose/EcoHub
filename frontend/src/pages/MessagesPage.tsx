@@ -22,7 +22,8 @@ const MessagesPage: React.FC = () => {
     const loadMessages = async () => {
         if (!currentUser) return;
         try {
-            const data = await api.getReceivedMessages(currentUser.id);
+            // --- MODIFICA: Chiamata al nuovo endpoint getMessages (che include inviati e ricevuti) ---
+            const data = await api.getMessages(currentUser.id);
             setMessages(data);
         } catch (err) {
             console.error("Errore caricamento messaggi", err);
@@ -48,6 +49,7 @@ const MessagesPage: React.FC = () => {
             setSuccess("Messaggio inviato con successo!");
             setContent('');
             setReceiverUsername('');
+            // Ricaricando, vedremo subito il messaggio inviato nella lista!
             loadMessages();
         } catch (err) {
             console.error(err);
@@ -55,9 +57,8 @@ const MessagesPage: React.FC = () => {
         }
     };
 
-    // --- FUNZIONE PER ELIMINARE (RIFIUTARE) UN MESSAGGIO ---
     const deleteMsgHelper = async (msgId: number) => {
-        if(!confirm("Vuoi davvero rifiutare ed eliminare questo messaggio?")) return;
+        if(!confirm("Vuoi eliminare questo messaggio?")) return;
         try {
             await api.deleteMessage(msgId);
             setMessages(prev => prev.filter(m => m.id !== msgId));
@@ -67,24 +68,16 @@ const MessagesPage: React.FC = () => {
         }
     };
 
-    // --- NUOVA FUNZIONE: RISPONDI ---
     const handleReply = (senderUsername: string) => {
-        // Imposta il destinatario nel form in alto
         setReceiverUsername(senderUsername);
-        // Pulisce il contenuto precedente
         setContent('');
-        // Scrolla verso l'alto per mostrare il form
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        // Feedback visivo opzionale (focus)
         const inputElement = document.getElementById('msg-content');
         if(inputElement) inputElement.focus();
     };
 
-    // --- LOGICA APPROVAZIONE MODERATORE (CORRETTA) ---
     const handlePromote = async (msgId: number, msgContent: string) => {
-        // CORREZIONE QUI:
         const match = msgContent.match(/@(\w+)/);
-
         if (match && match[1]) {
             const username = match[1];
             if(!confirm(`Promuovere ${username} a Moderatore?`)) return;
@@ -107,11 +100,11 @@ const MessagesPage: React.FC = () => {
         const match = msgContent.match(/@(\w+)/);
         if (match && match[1]) {
             const username = match[1];
-            if (!confirm(`Vuoi rifiutare la richiesta di ${username}? Verrà inviata una notifica.`)) return;
+            if (!confirm(`Vuoi rifiutare la richiesta di ${username}?`)) return;
 
             try {
                 await api.rejectUser(username);
-                alert("Richiesta rifiutata e notifica inviata.");
+                alert("Richiesta rifiutata.");
                 await api.deleteMessage(msgId);
                 setMessages(prev => prev.filter(m => m.id !== msgId));
             } catch (err) {
@@ -141,7 +134,7 @@ const MessagesPage: React.FC = () => {
 
                 <div style={{ marginBottom: '20px', textAlign: 'center' }}>
                     <h1 style={{ color: '#2e7d32', margin: '0 0 5px 0' }}>Messaggi 📩</h1>
-                    <p style={{ color: '#666' }}>Gestisci le tue conversazioni private.</p>
+                    <p style={{ color: '#666' }}>Tutte le tue conversazioni (inviati e ricevuti).</p>
                 </div>
 
                 {/* FORM INVIO */}
@@ -181,94 +174,77 @@ const MessagesPage: React.FC = () => {
                     </form>
                 </div>
 
-                {/* LISTA MESSAGGI */}
+                {/* LISTA MESSAGGI (STORIA) */}
                 <div>
-                    <h2 style={{ color: '#333', borderBottom: '2px solid #2e7d32', paddingBottom: '10px', marginBottom: '20px' }}>📬 Posta in arrivo</h2>
+                    <h2 style={{ color: '#333', borderBottom: '2px solid #2e7d32', paddingBottom: '10px', marginBottom: '20px' }}>🕐 Cronologia</h2>
 
                     {messages.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#666', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                        <div style={{ textAlign: 'center', padding: '40px', color: '#666', backgroundColor: 'white', borderRadius: '8px' }}>
                             <h3>Nessun messaggio 🍃</h3>
-                            <p>Non hai ancora ricevuto messaggi.</p>
+                            <p>Non hai ancora inviato o ricevuto messaggi.</p>
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             {messages.map((msg) => {
                                 const isModRequest = msg.content.includes("🔴 RICHIESTA MODERATORE 🔴");
+                                const isMine = msg.sender.id === currentUser.id; // Controlliamo se sono il mittente
 
                                 return (
                                     <div key={msg.id} style={{
-                                        backgroundColor: isModRequest ? '#fff8e1' : 'white',
+                                        // Stile dinamico: a destra se mio, a sinistra se ricevuto
+                                        alignSelf: isMine ? 'flex-end' : 'flex-start',
+                                        backgroundColor: isMine ? '#dcedc8' : (isModRequest ? '#fff8e1' : 'white'),
+                                        width: '80%', // Non prendiamo tutta la larghezza per dare effetto chat
                                         padding: '20px', borderRadius: '8px',
                                         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                                        borderLeft: isModRequest ? '5px solid #ff9800' : '5px solid #2e7d32'
+                                        borderLeft: !isMine ? (isModRequest ? '5px solid #ff9800' : '5px solid #2e7d32') : 'none',
+                                        borderRight: isMine ? '5px solid #2e7d32' : 'none',
+                                        marginLeft: isMine ? 'auto' : '0',
+                                        marginRight: isMine ? '0' : 'auto'
                                     }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'center' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#e8f5e9', color: '#2e7d32', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '14px', overflow: 'hidden', border: '1px solid #ddd' }}>
-                                                    {msg.sender.profilePicture ? <img src={msg.sender.profilePicture} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : msg.sender.username.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div><span style={{ fontWeight: 'bold', color: '#333', display: 'block' }}>@{msg.sender.username}</span></div>
+                                                {/* Se è mio, scriviamo "Tu", altrimenti mostriamo chi l'ha mandato */}
+                                                <span style={{ fontWeight: 'bold', color: '#333' }}>
+                                                    {isMine ? '📤 Tu' : `@${msg.sender.username}`}
+                                                </span>
+                                                {isMine && <span style={{fontSize:'12px', color:'#666'}}> ➝ a @{msg.receiver.username}</span>}
                                             </div>
                                             <span style={{ color: '#999', fontSize: '12px' }}>{new Date(msg.timestamp).toLocaleString()}</span>
                                         </div>
 
-                                        <div style={{ paddingLeft: '42px', color: '#444', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                                        <div style={{ color: '#444', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
                                             {msg.content}
                                         </div>
 
-                                        {/* --- BOTTONI ADMIN (SOLO PER MOD REQUEST) --- */}
-                                        {isModRequest && currentUser.role === 'MODERATOR' && (
-                                            <div style={{ marginTop: '15px', paddingLeft: '42px', display: 'flex', gap: '10px' }}>
-                                                <button
-                                                    onClick={() => handlePromote(msg.id, msg.content)}
-                                                    style={{ backgroundColor: '#4caf50', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-                                                >
-                                                    ✅ Approva
-                                                </button>
-                                                <button
-                                                    onClick={() => handleRejectModRequest(msg.id, msg.content)}
-                                                    style={{ backgroundColor: '#ef5350', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-                                                >
-                                                    ❌ Rifiuta
-                                                </button>
+                                        {/* AZIONI MODERATORE (Solo su messaggi ricevuti) */}
+                                        {!isMine && isModRequest && currentUser.role === 'MODERATOR' && (
+                                            <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
+                                                <button onClick={() => handlePromote(msg.id, msg.content)} style={{ backgroundColor: '#4caf50', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>✅ Approva</button>
+                                                <button onClick={() => handleRejectModRequest(msg.id, msg.content)} style={{ backgroundColor: '#ef5350', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>❌ Rifiuta</button>
                                             </div>
                                         )}
 
-                                        {/* --- NUOVI BOTTONI STANDARD (RISPONDI / RIFIUTA) --- */}
-                                        {!isModRequest && (
-                                            <div style={{ marginTop: '15px', paddingLeft: '42px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                                        {/* AZIONI STANDARD */}
+                                        <div style={{ marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                                            {/* Mostra "Rispondi" solo se il messaggio NON è mio */}
+                                            {!isMine && !isModRequest && (
                                                 <button
                                                     onClick={() => handleReply(msg.sender.username)}
-                                                    style={{
-                                                        backgroundColor: '#fff',
-                                                        border: '1px solid #2e7d32',
-                                                        color: '#2e7d32',
-                                                        padding: '6px 15px',
-                                                        borderRadius: '20px',
-                                                        cursor: 'pointer',
-                                                        fontWeight: 'bold',
-                                                        fontSize: '13px'
-                                                    }}
+                                                    style={{ backgroundColor: 'white', border: '1px solid #2e7d32', color: '#2e7d32', padding: '6px 12px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
                                                 >
                                                     ↩️ Rispondi
                                                 </button>
-                                                <button
-                                                    onClick={() => deleteMsgHelper(msg.id)}
-                                                    style={{
-                                                        backgroundColor: '#fff',
-                                                        border: '1px solid #d32f2f',
-                                                        color: '#d32f2f',
-                                                        padding: '6px 15px',
-                                                        borderRadius: '20px',
-                                                        cursor: 'pointer',
-                                                        fontWeight: 'bold',
-                                                        fontSize: '13px'
-                                                    }}
-                                                >
-                                                    🗑️ Rifiuta
-                                                </button>
-                                            </div>
-                                        )}
+                                            )}
+
+                                            {/* Elimina c'è sempre */}
+                                            <button
+                                                onClick={() => deleteMsgHelper(msg.id)}
+                                                style={{ backgroundColor: 'white', border: '1px solid #d32f2f', color: '#d32f2f', padding: '6px 12px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                                            >
+                                                🗑️ Elimina
+                                            </button>
+                                        </div>
                                     </div>
                                 );
                             })}
