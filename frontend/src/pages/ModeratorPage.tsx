@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import PostCard from '../components/PostCard';
+import { api } from '../services/api';
 import type { Post, User } from '../types';
 
 export default function ModeratorPage() {
@@ -10,33 +11,45 @@ export default function ModeratorPage() {
     const [requestingChangesId, setRequestingChangesId] = useState<number | null>(null);
     const [note, setNote] = useState('');
 
+    // Recupero utente
     const userString = localStorage.getItem('user');
     const user: User | null = userString ? JSON.parse(userString) : null;
 
     useEffect(() => {
-        loadPending();
-    }, []);
+        if (user && user.role === 'MODERATOR') {
+            loadPending();
+        }
+    }, [user]);
 
     const loadPending = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/moderation/pending');
-            const data = await response.json();
+            const data = await api.getPendingPosts();
             setPendingPosts(data);
         } catch (error) {
-            console.error(error);
+            console.error("Errore caricamento post pendenti:", error);
         }
     };
 
     const handleApprove = async (id: number) => {
         if (!confirm('Sei sicuro di voler approvare questo post?')) return;
-        await fetch(`http://localhost:8080/api/moderation/posts/${id}/approve`, { method: 'PUT' });
-        loadPending();
+        try {
+            await api.approvePost(id);
+            loadPending();
+        } catch (error) {
+            console.error("Errore approvazione:", error);
+            alert("Impossibile approvare il post.");
+        }
     };
 
     const handleReject = async (id: number) => {
         if (!confirm('Sei sicuro di voler RIFIUTARE definitivamente questo post?')) return;
-        await fetch(`http://localhost:8080/api/moderation/posts/${id}`, { method: 'DELETE' });
-        loadPending();
+        try {
+            await api.rejectPost(id);
+            loadPending();
+        } catch (error) {
+            console.error("Errore rifiuto:", error);
+            alert("Impossibile rifiutare il post.");
+        }
     };
 
     // 1. Apre il box per inserire la nota
@@ -45,7 +58,7 @@ export default function ModeratorPage() {
         setNote('');
     };
 
-    // 2. Invia la richiesta al server
+    // 2. Invia la richiesta al server tramite api.ts
     const submitRequestChanges = async (id: number) => {
         if (!note.trim()) {
             alert("Devi inserire una motivazione!");
@@ -53,11 +66,7 @@ export default function ModeratorPage() {
         }
 
         try {
-            await fetch(`http://localhost:8080/api/moderation/posts/${id}/request-changes`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'text/plain' }, // Il backend si aspetta una stringa body
-                body: note
-            });
+            await api.requestChanges(id, note);
             alert("Richiesta inviata all'autore.");
             setRequestingChangesId(null);
             loadPending();
@@ -68,7 +77,7 @@ export default function ModeratorPage() {
     };
 
     if (!user || user.role !== 'MODERATOR') {
-        return <h2 style={{textAlign:'center', marginTop:'50px'}}>⛔ Accesso Negato. Solo per Moderatori.</h2>;
+        return <h2 style={{ textAlign: 'center', marginTop: '50px' }}>⛔ Accesso Negato. Solo per Moderatori.</h2>;
     }
 
     return (
@@ -109,7 +118,7 @@ export default function ModeratorPage() {
                                                 placeholder="Motivazione (es: Foto non chiara, Aggiungi fonti...)"
                                                 value={note}
                                                 onChange={(e) => setNote(e.target.value)}
-                                                style={{ flex: 1, padding: '8px', border: '1px solid #orange', borderRadius: '4px' }}
+                                                style={{ flex: 1, padding: '8px', border: '1px solid orange', borderRadius: '4px' }}
                                             />
                                             <button
                                                 onClick={() => submitRequestChanges(post.id)}

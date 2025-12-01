@@ -4,6 +4,7 @@ async function request(endpoint: string, options?: RequestInit) {
     const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers: {
+            // Default è JSON, ma può essere sovrascritto da options.headers
             'Content-Type': 'application/json',
             ...options?.headers,
         },
@@ -13,6 +14,7 @@ async function request(endpoint: string, options?: RequestInit) {
         throw new Error(`Errore API: ${response.statusText}`);
     }
 
+    // Gestiamo il caso in cui la risposta sia vuota (es. dopo un delete o un put senza ritorno)
     const text = await response.text();
     return text ? JSON.parse(text) : {};
 }
@@ -42,23 +44,24 @@ export const api = {
             body: JSON.stringify(post)
         }),
 
+    // TAGS (Nuovo metodo aggiunto per la FilterBar)
+    getTags: () => request('/tags'),
+
     // COMMENTI & SUPPORT
     addComment: async (postId: number, userId: number, text: string) => {
-        const response = await fetch(`${API_URL}/posts/${postId}/comments?userId=${userId}`, {
+        // Qui usiamo fetch diretto o request forzando l'header text/plain
+        return request(`/posts/${postId}/comments?userId=${userId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: text
         });
-        if (!response.ok) throw new Error('Errore commento');
-        return response.json();
     },
 
     addSupport: async (postId: number, userId: number) => {
-        await fetch(`${API_URL}/posts/${postId}/support?userId=${userId}`, { method: 'POST' });
-        return true;
+        return request(`/posts/${postId}/support?userId=${userId}`, { method: 'POST' });
     },
 
-    // MESSAGGI (NUOVA SEZIONE AGGIUNTA)
+    // MESSAGGI
     getReceivedMessages: (userId: number) =>
         request(`/messages/received/${userId}`),
 
@@ -78,4 +81,21 @@ export const api = {
 
     // MODERAZIONE
     getPendingPosts: () => request('/moderation/pending'),
+
+    approvePost: (id: number) =>
+        request(`/moderation/posts/${id}/approve`, {
+            method: 'PUT'
+        }),
+
+    rejectPost: (id: number) =>
+        request(`/moderation/posts/${id}`, {
+            method: 'DELETE'
+        }),
+
+    requestChanges: (id: number, note: string) =>
+        request(`/moderation/posts/${id}/request-changes`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'text/plain' }, // Sovrascrive il JSON di default
+            body: note
+        }),
 };

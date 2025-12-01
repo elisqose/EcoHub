@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { api } from '../services/api'; // Assicurati che api.getTags sia implementato come visto prima
 import type { Tag } from '../types';
 
 interface FilterBarProps {
@@ -10,15 +11,17 @@ export default function FilterBar({ selectedTag, onSelectTag }: FilterBarProps) 
     const [tags, setTags] = useState<Tag[]>([]);
 
     useEffect(() => {
-        // Qui dovresti chiamare api.getTags().
-        // Per ora metto dei dati statici per farti vedere che funziona subito
-        // Sostituisci con la fetch reale appena puoi.
-        setTags([
-            { id: 1, name: 'Ecologia' },
-            { id: 2, name: 'Riciclo' },
-            { id: 3, name: 'Eventi' },
-            { id: 4, name: 'ZeroWaste' }
-        ]);
+        // Chiediamo al backend quali tag esistono nel database (quelli creati da DataInitializer)
+        const fetchTags = async () => {
+            try {
+                const data = await api.getTags();
+                setTags(data);
+            } catch (error) {
+                console.error("Errore caricamento tags:", error);
+            }
+        };
+
+        fetchTags();
     }, []);
 
     return (
@@ -32,7 +35,8 @@ export default function FilterBar({ selectedTag, onSelectTag }: FilterBarProps) 
                     backgroundColor: selectedTag === null ? '#2e7d32' : '#e0e0e0',
                     color: selectedTag === null ? 'white' : 'black',
                     cursor: 'pointer',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap'
                 }}
             >
                 Tutti
@@ -47,7 +51,8 @@ export default function FilterBar({ selectedTag, onSelectTag }: FilterBarProps) 
                         border: 'none',
                         backgroundColor: selectedTag === tag.name ? '#2e7d32' : '#e0e0e0',
                         color: selectedTag === tag.name ? 'white' : 'black',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
                     }}
                 >
                     #{tag.name}

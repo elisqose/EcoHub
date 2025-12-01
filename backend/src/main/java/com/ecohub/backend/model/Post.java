@@ -20,6 +20,8 @@ public class Post {
     @Column(length = 5000)
     private String content;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
 
     private LocalDateTime creationDate;
@@ -34,10 +36,11 @@ public class Post {
     private User author;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @com.fasterxml.jackson.annotation.JsonIgnore // Importante per evitare loop infiniti se serializzi
     private List<Comment> comments;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    private List<Support> supports;
+    private List<Support> supports; // Controlla se serve JsonIgnore anche qui
 
     @ManyToMany
     @JoinTable(
