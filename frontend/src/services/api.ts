@@ -83,6 +83,9 @@ export const api = {
             body: JSON.stringify({ senderId, receiverUsername, content })
         }),
 
+    deleteMessage: (messageId: number) =>
+        request(`/messages/${messageId}`, { method: 'DELETE' }),
+
     // UTENTI
     getUserProfile: (id: number) => request(`/users/${id}`),
 
@@ -91,6 +94,12 @@ export const api = {
             method: 'POST',
             body: JSON.stringify({ username, motivation })
         }),
+
+    rejectUser: (username: string) =>
+        request(`/users/reject-moderation/${username}`, { method: 'POST' }),
+
+    promoteUser: (username: string) =>
+        request(`/users/promote/${username}`, { method: 'POST' }),
 
     updateProfilePicture: (userId: number, base64Image: string) =>
         request(`/users/${userId}/picture`, {
@@ -125,7 +134,4 @@ export const api = {
             headers: { 'Content-Type': 'text/plain' }, // Sovrascrive il JSON di default
             body: note
         }),
-
-    promoteUser: (username: string) =>
-        request(`/users/promote/${username}`, { method: 'POST' }),
 };

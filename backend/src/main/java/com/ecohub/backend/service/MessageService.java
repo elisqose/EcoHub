@@ -48,4 +48,8 @@ public class MessageService {
         }
         return messageRepository.findByReceiver_IdOrderByTimestampDesc(userId);
     }
+
+    public void deleteMessage(Long messageId) {
+        messageRepository.deleteById(messageId);
+    }
 }

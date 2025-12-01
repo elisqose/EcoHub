@@ -66,4 +66,14 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("/reject-moderation/{username}")
+    public ResponseEntity<?> rejectModeration(@PathVariable String username) {
+        try {
+            userService.rejectModeratorRequest(username);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

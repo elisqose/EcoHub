@@ -95,4 +95,15 @@ public class UserService {
             sendMessage(admin.getId(), user.getId(), "✅ Congratulazioni! La tua richiesta è stata accettata. Ora sei un Moderatore.");
         }
     }
+
+    public void rejectModeratorRequest(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato: " + username));
+
+        User admin = userRepository.findByUsername("admin")
+                .orElseThrow(() -> new RuntimeException("Admin non trovato"));
+
+        // Inviamo il messaggio di rifiuto
+        sendMessage(admin.getId(), user.getId(), "❌ Ciao " + username + ", ci dispiace informarti che la tua richiesta per diventare Moderatore non è stata accettata al momento.");
+    }
 }
