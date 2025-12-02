@@ -130,7 +130,7 @@ export default function MessagesPage() {
             <Navbar user={currentUser} />
 
             <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-                <h1 style={{ color: '#2e7d32', textAlign: 'center', marginBottom: '20px' }}>Messaggistica 📬</h1>
+                <h1 style={{ color: '#2e7d32', textAlign: 'center', marginBottom: '20px' }}>Messaggi</h1>
 
                 {/* FORM INVIO */}
                 <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
@@ -157,7 +157,7 @@ export default function MessagesPage() {
                             required
                         />
                         <button type="submit" style={{ backgroundColor: '#2e7d32', color: 'white', padding: '10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
-                            Invia Messaggio ✈️
+                            Invia Messaggio
                         </button>
                     </form>
                 </div>
@@ -173,7 +173,7 @@ export default function MessagesPage() {
                             transition: 'background-color 0.2s'
                         }}
                     >
-                        📥 Posta in Arrivo
+                        ⬇️  Posta in Arrivo
                     </button>
                     <button
                         onClick={() => setActiveTab('OUTBOX')}
@@ -184,7 +184,7 @@ export default function MessagesPage() {
                             transition: 'background-color 0.2s'
                         }}
                     >
-                        📤 Posta Inviata
+                        ⬆️ Posta Inviata
                     </button>
                 </div>
 

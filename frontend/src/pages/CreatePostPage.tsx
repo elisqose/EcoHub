@@ -53,7 +53,7 @@ export default function CreatePostPage() {
         <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
             <Navbar user={user} />
             <div style={{ maxWidth: '600px', margin: '30px auto', padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-                <h2 style={{ color: '#2e7d32', textAlign: 'center' }}>Scrivi un nuovo post ✍️</h2>
+                <h2 style={{ color: '#2e7d32', textAlign: 'center' }}>Scrivi un nuovo post </h2>
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
                     <input

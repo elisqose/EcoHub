@@ -10,7 +10,6 @@ export default function Navbar({ user }: NavbarProps) {
     const navigate = useNavigate();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-    // Gestione ridimensionamento finestra per la responsività
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
@@ -22,19 +21,34 @@ export default function Navbar({ user }: NavbarProps) {
         navigate('/');
     };
 
+    // Stile comune per TUTTI i bottoni per garantire la stessa dimensione
+    const commonButtonStyle = {
+        height: isMobile ? '34px' : '40px', // Altezza fissa uguale per tutti
+        padding: isMobile ? '0 10px' : '0 20px', // Padding laterale (verticale gestito da height)
+        borderRadius: '20px',
+        cursor: 'pointer',
+        fontWeight: 'bold' as const, // Fix per TypeScript
+        fontSize: isMobile ? '12px' : '14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center', // Centra il testo
+        gap: '6px',
+        whiteSpace: 'nowrap' as const // Evita che il testo vada a capo
+    };
+
     return (
         <nav style={{
             backgroundColor: 'white',
-            padding: isMobile ? '10px' : '15px 20px', // Meno padding su mobile
+            padding: isMobile ? '10px' : '15px 20px',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
             display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row', // Colonna su mobile, Riga su PC
+            flexDirection: isMobile ? 'column' : 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
             position: 'sticky',
             top: 0,
             zIndex: 1000,
-            gap: isMobile ? '10px' : '0' // Spazio tra le righe su mobile
+            gap: isMobile ? '10px' : '0'
         }}>
 
             {/* SINISTRA: Logo */}
@@ -47,25 +61,18 @@ export default function Navbar({ user }: NavbarProps) {
                     🌱 EcoHub
                 </h2>
 
-                {/* Tasto Moderatore (Solo se admin) */}
+                {/* Tasto Moderatore (Desktop) */}
                 {user?.role === 'MODERATOR' && !isMobile && (
                     <button
                         onClick={() => navigate('/moderation')}
                         style={{
+                            ...commonButtonStyle,
                             backgroundColor: '#ff9800',
                             color: 'white',
-                            border: 'none',
-                            padding: '6px 12px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            fontSize: '14px',
-                            fontWeight: 'bold'
+                            border: '1px solid transparent',
                         }}
                     >
-                        🛡️ Mod
+                        🛡️ Moderazione
                     </button>
                 )}
             </div>
@@ -74,17 +81,22 @@ export default function Navbar({ user }: NavbarProps) {
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: isMobile ? '8px' : '15px',
-                flexWrap: isMobile ? 'wrap' : 'nowrap', // Permette ai bottoni di andare a capo su mobile
+                gap: isMobile ? '8px' : '12px',
+                flexWrap: isMobile ? 'wrap' : 'nowrap',
                 justifyContent: isMobile ? 'center' : 'flex-end',
                 width: isMobile ? '100%' : 'auto'
             }}>
 
-                {/* Tasto Moderatore (Su mobile lo metto qui per comodità) */}
+                {/* Tasto Moderatore (Mobile) */}
                 {user?.role === 'MODERATOR' && isMobile && (
                     <button
                         onClick={() => navigate('/moderation')}
-                        style={{ backgroundColor: '#ff9800', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                        style={{
+                            ...commonButtonStyle,
+                            backgroundColor: '#ff9800',
+                            color: 'white',
+                            border: '1px solid transparent',
+                        }}
                     >
                         🛡️ Mod
                     </button>
@@ -94,17 +106,10 @@ export default function Navbar({ user }: NavbarProps) {
                 <button
                     onClick={() => navigate('/search-users')}
                     style={{
+                        ...commonButtonStyle,
                         backgroundColor: 'transparent',
                         color: '#555',
-                        border: '1px solid #ccc',
-                        padding: isMobile ? '6px 10px' : '8px 15px',
-                        borderRadius: '20px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        fontSize: isMobile ? '12px' : '14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '5px'
+                        border: '1px solid #ccc', // Bordo visibile
                     }}
                 >
                     🔍 {isMobile ? '' : 'Cerca'}
@@ -114,63 +119,48 @@ export default function Navbar({ user }: NavbarProps) {
                 <button
                     onClick={() => navigate('/create-post')}
                     style={{
+                        ...commonButtonStyle,
                         backgroundColor: '#2e7d32',
                         color: 'white',
-                        border: 'none',
-                        padding: isMobile ? '6px 10px' : '8px 15px',
-                        borderRadius: '20px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        fontSize: isMobile ? '12px' : '14px',
+                        border: '1px solid transparent', // Bordo invisibile (per pareggiare altezza)
                         boxShadow: '0 2px 5px rgba(46, 125, 50, 0.2)'
                     }}
                 >
-                    + Post
+                    <span style={{ fontSize: '16px', lineHeight: 1 }}>+</span>
+                    {isMobile ? 'Post' : 'Nuovo Post'}
                 </button>
 
                 {/* Messaggi */}
                 <button
                     onClick={() => navigate('/messages')}
                     style={{
+                        ...commonButtonStyle,
                         backgroundColor: '#e8f5e9',
                         color: '#2e7d32',
-                        border: 'none',
-                        padding: isMobile ? '6px 10px' : '8px 15px',
-                        borderRadius: '20px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        fontSize: isMobile ? '12px' : '14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '5px'
+                        border: '1px solid transparent', // Bordo invisibile
                     }}
                 >
                     📩 {isMobile ? '' : 'Messaggi'}
                 </button>
 
-                {/* Profilo Utente (Con Foto) */}
+                {/* Profilo Utente */}
                 <div
                     onClick={() => navigate('/profile')}
                     style={{
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '5px 10px',
-                        borderRadius: '20px',
-                        transition: 'background-color 0.2s',
-                        border: isMobile ? '1px solid #eee' : 'none'
+                        ...commonButtonStyle,
+                        backgroundColor: 'transparent',
+                        border: isMobile ? '1px solid #eee' : '1px solid transparent',
+                        padding: '0 5px', // Leggermente meno padding per l'avatar
+                        gap: '8px'
                     }}
                     title="Vai al tuo profilo"
                 >
-                    {/* Nascondiamo il nome su mobile per risparmiare spazio */}
                     {!isMobile && (
                         <span style={{ color: '#555', fontSize: '14px', textTransform: 'capitalize' }}>
                             Ciao, <b>{user?.username}</b>
                         </span>
                     )}
 
-                    {/* AVATAR */}
                     <div style={{
                         width: '32px',
                         height: '32px',
@@ -183,7 +173,8 @@ export default function Navbar({ user }: NavbarProps) {
                         fontSize: '14px',
                         fontWeight: 'bold',
                         overflow: 'hidden',
-                        border: '1px solid #e8f5e9'
+                        border: '1px solid #e8f5e9',
+                        flexShrink: 0
                     }}>
                         {user?.profilePicture ? (
                             <img
@@ -201,13 +192,11 @@ export default function Navbar({ user }: NavbarProps) {
                 <button
                     onClick={handleLogout}
                     style={{
-                        padding: isMobile ? '6px 10px' : '8px 12px',
+                        ...commonButtonStyle,
                         backgroundColor: 'white',
                         border: '1px solid #ddd',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
                         color: '#666',
-                        fontSize: isMobile ? '12px' : '14px'
+                        padding: isMobile ? '0 10px' : '0 15px'
                     }}
                 >
                     Esci
