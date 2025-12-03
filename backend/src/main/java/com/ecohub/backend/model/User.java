@@ -32,6 +32,7 @@ public class User {
 
     @OneToMany(mappedBy = "receiver")
     @com.fasterxml.jackson.annotation.JsonIgnore
+    @ToString.Exclude
     private List<Message> receivedMessages;
 
     @ManyToMany
@@ -41,10 +42,11 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "followed_id"))
 
     @JsonIgnoreProperties({"following", "followers", "password", "receivedMessages", "posts"})
+    @ToString.Exclude
     private List<User> following = new ArrayList<>();
 
     @ManyToMany(mappedBy = "following")
-
     @JsonIgnoreProperties({"following", "followers", "password", "receivedMessages", "posts"})
+    @ToString.Exclude
     private List<User> followers = new ArrayList<>();
 }
