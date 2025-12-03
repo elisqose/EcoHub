@@ -129,6 +129,7 @@ public class ContentService {
     }
 
     public List<Post> getUserPosts(Long userId) {
-        return postRepository.findByAuthor_Id(userId);
+        // Prima era: return postRepository.findByAuthor_Id(userId);
+        return postRepository.findByAuthor_IdOrderByCreationDateDesc(userId);
     }
 }

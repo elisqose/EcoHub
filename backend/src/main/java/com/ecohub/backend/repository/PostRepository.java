@@ -13,7 +13,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByTags_NameAndStatus(String tagName, PostStatus status);
 
-    List<Post> findByAuthor_Id(Long userId);
+    List<Post> findByAuthor_IdOrderByCreationDateDesc(Long userId);
 
     List<Post> findByTitleContainingOrContentContainingAndStatus(String title, String content, PostStatus status);
 
