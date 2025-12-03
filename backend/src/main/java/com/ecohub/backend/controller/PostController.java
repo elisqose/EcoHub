@@ -16,7 +16,6 @@ public class PostController {
     @Autowired
     private ContentService contentService;
 
-    // ... (metodi esistenti: getFeed, getPost, createPost, updatePost, deletePost) ...
     @GetMapping
     public List<Post> getFeed(@RequestParam(required = false) String tag) {
         if (tag != null && !tag.isEmpty()) {
@@ -46,13 +45,11 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
-    // --- COMMENTI ---
     @PostMapping("/{id}/comments")
     public Comment addComment(@PathVariable Long id, @RequestParam Long userId, @RequestBody String text) {
         return contentService.addComment(id, userId, text);
     }
 
-    // --- NUOVO ENDPOINT: Elimina commento ---
     @DeleteMapping("/{postId}/comments/{commentId}")
     public ResponseEntity<?> deleteComment(
             @PathVariable Long postId,
@@ -66,10 +63,9 @@ public class PostController {
         }
     }
 
-    // ... (metodi esistenti: supportPost, getUserPosts) ...
     @PostMapping("/{id}/support")
     public ResponseEntity<?> supportPost(@PathVariable Long id, @RequestParam Long userId) {
-        contentService.toggleSupport(id, userId); // <--- Chiama il nuovo metodo Toggle
+        contentService.toggleSupport(id, userId);
         return ResponseEntity.ok().build();
     }
 

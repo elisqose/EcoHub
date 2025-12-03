@@ -36,7 +36,6 @@ public class Post {
     private User author;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    // 3. RIMOSSO @JsonIgnore qui. Ora i commenti saranno visibili nel feed!
     private List<Comment> comments;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)

@@ -1,6 +1,6 @@
 package com.ecohub.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // <--- Importante
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -15,20 +15,18 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 2000) // Allunghiamo un po' il testo possibile
+    @Column(length = 2000)
     private String content;
 
     private LocalDateTime timestamp;
 
     @ManyToOne
     @JoinColumn(name = "sender_id")
-    // Quando inviamo il messaggio, non vogliamo tutta la storia dei follower del mittente
     @JsonIgnoreProperties({"following", "followers", "receivedMessages", "password"})
     private User sender;
 
     @ManyToOne
     @JoinColumn(name = "receiver_id")
-    // Idem per il destinatario
     @JsonIgnoreProperties({"following", "followers", "receivedMessages", "password"})
     private User receiver;
 }

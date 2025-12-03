@@ -17,15 +17,14 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired private UserRepository userRepository;
     @Autowired private PostRepository postRepository;
     @Autowired private TagRepository tagRepository;
-    @Autowired private MessageRepository messageRepository; // <--- NUOVO
-    @Autowired private CommentRepository commentRepository; // <--- NUOVO
+    @Autowired private MessageRepository messageRepository;
+    @Autowired private CommentRepository commentRepository;
 
     @Override
     public void run(String... args) throws Exception {
         if (userRepository.count() == 0) {
             System.out.println("--- INIZIO CARICAMENTO DATI ESTESI (UTENTI, POST, MESSAGGI, COMMENTI) ---");
 
-            // 1. CREAZIONE UTENTI
             User admin = new User(null, "admin", "admin", "admin@ecohub.com",
                     "Moderatore ufficiale della piattaforma EcoHub.",
                     UserRole.MODERATOR,
@@ -62,7 +61,6 @@ public class DataInitializer implements CommandLineRunner {
                     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop",
                     new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
-            // Relazioni Follow
             mario.getFollowing().addAll(Arrays.asList(luigi, giulia, sara));
             luigi.getFollowing().addAll(Arrays.asList(mario, marco));
             giulia.getFollowing().addAll(Arrays.asList(sara));
@@ -71,7 +69,6 @@ public class DataInitializer implements CommandLineRunner {
 
             userRepository.saveAll(Arrays.asList(admin, mario, luigi, giulia, sara, marco));
 
-            // 2. CREAZIONE TAG
             Tag tagEco = new Tag(null, "Ecologia");
             Tag tagRiciclo = new Tag(null, "Riciclo");
             Tag tagEventi = new Tag(null, "Eventi");
@@ -82,59 +79,50 @@ public class DataInitializer implements CommandLineRunner {
 
             tagRepository.saveAll(Arrays.asList(tagEco, tagRiciclo, tagEventi, tagZeroWaste, tagModa, tagTech, tagFood));
 
-            // 3. CREAZIONE POST
             List<Post> posts = new ArrayList<>();
 
-            // Post 0: Mario (Pomodori)
             posts.add(new Post(null, "Il mio orto urbano cresce!",
                     "Quest'anno i pomodori sono esplosi. Ho usato solo compost fatto in casa.",
                     "https://images.unsplash.com/photo-1696087172662-65f7b09d614e?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                     LocalDateTime.now().minusDays(5), PostStatus.APPROVED, null,
                     mario, new ArrayList<>(), new ArrayList<>(), List.of(tagEco, tagFood)));
 
-            // Post 1: Luigi (Guida Plastica)
             posts.add(new Post(null, "Guida: Plastica vs Bioplastica",
                     "Facciamo chiarezza: la bioplastica va nell'umido solo se certificata compostabile.",
                     "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?w=800",
                     LocalDateTime.now().minusDays(3), PostStatus.APPROVED, null,
                     luigi, new ArrayList<>(), new ArrayList<>(), List.of(tagRiciclo, tagEco)));
 
-            // Post 2: Giulia (Outfit)
             posts.add(new Post(null, "Outfit 100% Second Hand",
                     "Non serve comprare nuovo per avere stile. Costo totale? 15 euro!",
                     "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800",
                     LocalDateTime.now().minusDays(2), PostStatus.APPROVED, null,
                     giulia, new ArrayList<>(), new ArrayList<>(), List.of(tagModa, tagZeroWaste)));
 
-            // Post 3: Sara (Spesa Sfusa)
             posts.add(new Post(null, "Spesa sfusa: come iniziare",
                     "Portatevi sempre i sacchetti di stoffa. Iniziate con frutta e verdura.",
                     "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800",
                     LocalDateTime.now().minusHours(10), PostStatus.APPROVED, null,
                     sara, new ArrayList<>(), new ArrayList<>(), List.of(tagZeroWaste, tagFood)));
 
-            // Post 4: Marco (Pannelli)
             posts.add(new Post(null, "Pannelli solari da balcone?",
                     "Sto testando un kit da 300W plug & play. Vi aggiornerò sui consumi.",
                     "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800",
                     LocalDateTime.now().minusHours(2), PostStatus.APPROVED, null,
                     marco, new ArrayList<>(), new ArrayList<>(), List.of(tagTech, tagEco)));
 
-            // Post 5: Mario (Pending - Evento)
             posts.add(new Post(null, "Organizzazione pulizia parco",
                     "Domenica prossima ci troviamo al Parco Sempione. Chi viene?",
                     null,
                     LocalDateTime.now(), PostStatus.PENDING, null,
                     mario, new ArrayList<>(), new ArrayList<>(), List.of(tagEventi, tagEco)));
 
-            // Post 6: Luigi (Pending - Spam)
             posts.add(new Post(null, "Vendo integratori",
                     "Contattatemi in privato.",
                     null,
                     LocalDateTime.now().minusMinutes(30), PostStatus.PENDING, null,
                     luigi, new ArrayList<>(), new ArrayList<>(), List.of(tagModa)));
 
-            // Post 7: Marco (Requires Changes)
             posts.add(new Post(null, "Come riciclare batterie",
                     "Le batterie vanno nel secco.",
                     null,
@@ -142,7 +130,6 @@ public class DataInitializer implements CommandLineRunner {
                     "Info errata! Correggi indicando i contenitori RAEE.",
                     marco, new ArrayList<>(), new ArrayList<>(), List.of(tagRiciclo)));
 
-            // Post 8: Sara (Rejected)
             posts.add(new Post(null, "Odio il traffico!!!",
                     "Spero esplodano tutte le auto.",
                     null,
@@ -150,48 +137,35 @@ public class DataInitializer implements CommandLineRunner {
                     "Linguaggio violento.",
                     sara, new ArrayList<>(), new ArrayList<>(), List.of(tagEco)));
 
-            // Salviamo i post per averli con ID validi prima di creare commenti
             postRepository.saveAll(posts);
 
-            // 4. CREAZIONE COMMENTI
             List<Comment> comments = new ArrayList<>();
 
-            // Commenti su Post 0 (Mario - Pomodori)
             comments.add(new Comment(null, "Che belli! Che varietà sono?", LocalDateTime.now().minusDays(4), luigi, posts.get(0)));
             comments.add(new Comment(null, "Datterini, dolcissimi!", LocalDateTime.now().minusDays(4).plusHours(1), mario, posts.get(0)));
             comments.add(new Comment(null, "Wow, sembrano deliziosi 🍅", LocalDateTime.now().minusDays(3), sara, posts.get(0)));
 
-            // Commenti su Post 1 (Luigi - Plastica)
             comments.add(new Comment(null, "Grazie per la chiarezza, sbagliavo sempre.", LocalDateTime.now().minusDays(2), giulia, posts.get(1)));
             comments.add(new Comment(null, "Esatto, il PLA va conferito correttamente.", LocalDateTime.now().minusDays(2), marco, posts.get(1)));
 
-            // Commenti su Post 2 (Giulia - Outfit)
             comments.add(new Comment(null, "Adoro quella giacca!", LocalDateTime.now().minusDays(1), sara, posts.get(2)));
 
             commentRepository.saveAll(comments);
 
-            // 5. CREAZIONE MESSAGGI (Chat & Moderazione)
             List<Message> messages = new ArrayList<>();
 
-            // Chat tra Utenti (Networking)
-            // Luigi scrive a Mario
             messages.add(new Message(null, "Ciao Mario! Per l'orto usi concime liquido?", LocalDateTime.now().minusDays(2), luigi, mario));
-            // Mario risponde
+
             messages.add(new Message(null, "Ciao! No, uso solo il compost che faccio io col bidone in balcone. Funziona alla grande.", LocalDateTime.now().minusDays(2).plusHours(2), mario, luigi));
-            // Luigi ringrazia
+
             messages.add(new Message(null, "Ottimo, devo provare anche io. Grazie!", LocalDateTime.now().minusDays(2).plusHours(3), luigi, mario));
 
-            // Giulia scrive a Sara
             messages.add(new Message(null, "Ciao Sara, dove compri i legumi sfusi a Milano?", LocalDateTime.now().minusDays(1), giulia, sara));
 
-            // Messaggi di Moderazione (Admin -> Utenti)
-            // Benvenuto a Marco
             messages.add(new Message(null, "Benvenuto su EcoHub Marco! 🌿\nSiamo felici di avere un ingegnere nel gruppo. Ricordati di leggere il regolamento prima di postare.", LocalDateTime.now().minusDays(5), admin, marco));
 
-            // Avviso a Sara (per il post rifiutato)
             messages.add(new Message(null, "⚠️ AVVISO MODERAZIONE\n\nIl tuo post 'Odio il traffico!!!' è stato rimosso perché violava le linee guida sulla comunicazione non violenta. Ti invitiamo a mantenere toni costruttivi.", LocalDateTime.now().minusDays(10), admin, sara));
 
-            // Richiesta modifiche a Marco (Notifica automatica simulata)
             messages.add(new Message(null, "✏️ Il moderatore ha richiesto modifiche al tuo post 'Come riciclare batterie'.\n\nNota: Info errata! Correggi indicando i contenitori RAEE.", LocalDateTime.now().minusDays(1), admin, marco));
 
             messageRepository.saveAll(messages);

@@ -17,13 +17,11 @@ public class MessageController {
     @Autowired
     private MessageService messageService;
 
-    // Endpoint Posta in Arrivo
     @GetMapping("/received/{userId}")
     public ResponseEntity<List<Message>> getReceived(@PathVariable Long userId) {
         return ResponseEntity.ok(messageService.getReceivedMessages(userId));
     }
 
-    // Endpoint Posta Inviata
     @GetMapping("/sent/{userId}")
     public ResponseEntity<List<Message>> getSent(@PathVariable Long userId) {
         return ResponseEntity.ok(messageService.getSentMessages(userId));

@@ -85,13 +85,13 @@ public class UserController {
 
     @DeleteMapping("/{id}/follow")
     public ResponseEntity<?> unfollow(@RequestParam Long followerId, @PathVariable Long id) {
-        userService.unfollowUser(followerId, id); // id è l'utente che smetto di seguire
+        userService.unfollowUser(followerId, id);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/follower")
     public ResponseEntity<?> removeFollower(@PathVariable Long id, @RequestParam Long followerId) {
-        userService.removeFollower(id, followerId); // id sono io, followerId è chi rimuovo
+        userService.removeFollower(id, followerId);
         return ResponseEntity.ok().build();
     }
 }

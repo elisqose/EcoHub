@@ -10,5 +10,5 @@ import java.util.Optional;
 @Repository
 public interface SupportRepository extends JpaRepository<Support, Long> {
     boolean existsByUserAndPost(User user, Post post);
-    Optional<Support> findByUserAndPost(User user, Post post); // <--- NUOVO
+    Optional<Support> findByUserAndPost(User user, Post post);
 }

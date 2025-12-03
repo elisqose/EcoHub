@@ -46,13 +46,11 @@ export default function HomePage() {
     if (!user) return null;
 
     return (
-        // NOTA: Qui NON c'è fontFamily: 'Arial...', quindi usa il font di default (Times New Roman)
         <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
             <Navbar user={user} />
 
             <div style={{ maxWidth: '700px', margin: '0 auto', padding: '20px' }}>
                 <div style={{ marginBottom: '20px' }}>
-                    {/* --- MODIFICA QUI: Aggiunto textTransform: 'capitalize' --- */}
                     <h1 style={{ color: '#2e7d32', marginBottom: '5px', textTransform: 'capitalize' }}>
                         Ciao, {user.username}! 👋
                     </h1>

@@ -68,7 +68,6 @@ export default function LoginPage() {
                         <span style={{ color: '#666' }}>Non hai un account? </span>
                         <Link to="/register" style={{ color: '#2e7d32', fontWeight: 'bold', textDecoration: 'none' }}>Registrati qui</Link>
                     </div>
-                    {/* Link "Diventa Moderatore" RIMOSSO da qui */}
                 </div>
             </div>
         </div>

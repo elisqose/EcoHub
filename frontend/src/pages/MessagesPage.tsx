@@ -7,38 +7,31 @@ import type { Message, User } from '../types';
 export default function MessagesPage() {
     const location = useLocation();
 
-    // Stati per la gestione della vista
     const [activeTab, setActiveTab] = useState<'INBOX' | 'OUTBOX'>('INBOX');
     const [messages, setMessages] = useState<Message[]>([]);
 
-    // Stati per il form di invio
     const [receiverUsername, setReceiverUsername] = useState('');
     const [content, setContent] = useState('');
 
-    // Stati di feedback
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
-    // Recupero utente corrente
     const userString = localStorage.getItem('user');
     const currentUser: User | null = userString ? JSON.parse(userString) : null;
 
-    // EFFETTO 1: Gestione arrivo da "Contatta" (UserProfilePage)
     useEffect(() => {
-        // Se c'è uno stato nella navigazione (es. clic su Contatta)
         if (location.state && location.state.targetUsername) {
             setReceiverUsername(location.state.targetUsername);
-            // Pulisce lo state per evitare che il campo si riempia di nuovo se l'utente ricarica
+
             window.history.replaceState({}, document.title);
         }
     }, [location]);
 
-    // EFFETTO 2: Caricamento messaggi al cambio Tab o Utente
     useEffect(() => {
         if (currentUser) {
             loadMessages();
         }
-    }, [activeTab, currentUser]); // Aggiunto currentUser alle dipendenze
+    }, [activeTab, currentUser]);
 
     const loadMessages = async () => {
         if (!currentUser) return;
@@ -70,7 +63,7 @@ export default function MessagesPage() {
             await api.sendMessage(currentUser.id, receiverUsername.trim(), content);
             setSuccess("Messaggio inviato!");
             setContent('');
-            // Se siamo in OUTBOX, ricarichiamo per vedere il messaggio appena inviato
+
             if (activeTab === 'OUTBOX') loadMessages();
         } catch (err) {
             console.error(err);
@@ -88,7 +81,6 @@ export default function MessagesPage() {
         }
     };
 
-    // Funzione "Rispondi" (interna alla pagina)
     const handleReply = (username: string) => {
         setReceiverUsername(username);
         setError(null);
@@ -96,7 +88,6 @@ export default function MessagesPage() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Logica Moderatore (Approva/Rifiuta richiesta ruolo)
     const handleModerationAction = async (msgId: number, msgContent: string, action: 'PROMOTE' | 'REJECT') => {
         const match = msgContent.match(/@(\w+)/);
         if (!match || !match[1]) return alert("Username non trovato nel messaggio.");
@@ -111,7 +102,6 @@ export default function MessagesPage() {
                 await api.rejectUser(targetUsername);
                 alert(`Richiesta di ${targetUsername} rifiutata.`);
             }
-            // Dopo l'azione, cancelliamo il messaggio di richiesta per pulizia
             handleDelete(msgId);
         } catch (err) {
             alert("Errore durante l'operazione.");
@@ -132,7 +122,6 @@ export default function MessagesPage() {
             <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
                 <h1 style={{ color: '#2e7d32', textAlign: 'center', marginBottom: '20px' }}>Messaggi</h1>
 
-                {/* FORM INVIO */}
                 <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                     <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#333' }}>Scrivi Nuovo Messaggio</h3>
 
@@ -162,7 +151,6 @@ export default function MessagesPage() {
                     </form>
                 </div>
 
-                {/* TABS (Inbox / Outbox) */}
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
                     <button
                         onClick={() => setActiveTab('INBOX')}
@@ -188,7 +176,6 @@ export default function MessagesPage() {
                     </button>
                 </div>
 
-                {/* LISTA MESSAGGI */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {messages.length === 0 && <p style={{ textAlign: 'center', color: '#888', padding: '20px' }}>Nessun messaggio.</p>}
 
@@ -217,7 +204,6 @@ export default function MessagesPage() {
 
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
 
-                                    {/* BOTTONI ADMIN (Solo se: Inbox, Richiesta Mod, Utente è Mod) */}
                                     {activeTab === 'INBOX' && isModRequest && currentUser.role === 'MODERATOR' && (
                                         <>
                                             <button onClick={() => handleModerationAction(msg.id, msg.content, 'PROMOTE')} style={{ backgroundColor: '#4caf50', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>Accetta</button>
@@ -225,7 +211,6 @@ export default function MessagesPage() {
                                         </>
                                     )}
 
-                                    {/* TASTO RISPONDI (Solo in Inbox) */}
                                     {activeTab === 'INBOX' && (
                                         <button
                                             onClick={() => handleReply(otherUser.username)}

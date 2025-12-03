@@ -11,19 +11,16 @@ export default function CreatePostPage() {
     const [tags, setTags] = useState('');
     const navigate = useNavigate();
 
-    // Recuperiamo l'utente
     const userString = localStorage.getItem('user');
     const user: User | null = userString ? JSON.parse(userString) : null;
 
     if (!user) return <p>Devi fare login!</p>;
 
-    // Funzione per gestire il caricamento del file locale
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                // Il risultato è una stringa Base64 (es. "data:image/png;base64,iVBOR...")
                 setImageUrl(reader.result as string);
             };
             reader.readAsDataURL(file);
@@ -65,11 +62,10 @@ export default function CreatePostPage() {
                         required
                     />
 
-                    {/* SEZIONE IMMAGINE: URL o FILE */}
+
                     <div style={{ border: '1px dashed #ccc', padding: '15px', borderRadius: '4px', backgroundColor: '#fafafa' }}>
                         <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#666' }}>Aggiungi un'immagine (scegli un metodo):</p>
 
-                        {/* Opzione 1: URL */}
                         <input
                             type="text"
                             placeholder="Incolla un URL (https://...)"
@@ -80,7 +76,6 @@ export default function CreatePostPage() {
 
                         <div style={{ textAlign: 'center', margin: '5px 0', fontSize: '12px', color: '#999' }}>- OPPURE -</div>
 
-                        {/* Opzione 2: File Locale */}
                         <input
                             type="file"
                             accept="image/*"
@@ -89,7 +84,6 @@ export default function CreatePostPage() {
                         />
                     </div>
 
-                    {/* Anteprima Immagine */}
                     {imageUrl && (
                         <div style={{ textAlign: 'center' }}>
                             <img

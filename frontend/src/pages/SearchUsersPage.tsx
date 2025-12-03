@@ -97,7 +97,6 @@ export default function SearchUsersPage() {
                             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                {/* --- MODIFICA QUI: Avatar con Foto o Iniziale --- */}
                                 <div style={{
                                     width: '50px', height: '50px', borderRadius: '50%',
                                     backgroundColor: '#e8f5e9', color: '#2e7d32',

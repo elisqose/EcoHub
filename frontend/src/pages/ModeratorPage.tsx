@@ -7,11 +7,9 @@ import type { Post, User } from '../types';
 export default function ModeratorPage() {
     const [pendingPosts, setPendingPosts] = useState<Post[]>([]);
 
-    // Stato per gestire il box di richiesta modifiche
     const [requestingChangesId, setRequestingChangesId] = useState<number | null>(null);
     const [note, setNote] = useState('');
 
-    // Recupero utente
     const userString = localStorage.getItem('user');
     const user: User | null = userString ? JSON.parse(userString) : null;
 
@@ -52,13 +50,11 @@ export default function ModeratorPage() {
         }
     };
 
-    // 1. Apre il box per inserire la nota
     const startRequestChanges = (id: number) => {
         setRequestingChangesId(id);
         setNote('');
     };
 
-    // 2. Invia la richiesta al server tramite api.ts
     const submitRequestChanges = async (id: number) => {
         if (!note.trim()) {
             alert("Devi inserire una motivazione!");
@@ -95,12 +91,11 @@ export default function ModeratorPage() {
                             <div key={post.id} style={{ marginBottom: '20px' }}>
                                 <PostCard
                                     post={post}
-                                    showActions={true} // Questo attiva i bottoni base nella card
+                                    showActions={true}
                                     onApprove={handleApprove}
                                     onReject={handleReject}
                                 />
 
-                                {/* SEZIONE EXTRA: Richiesta Modifiche */}
                                 <div style={{
                                     backgroundColor: 'white',
                                     padding: '10px 20px',
