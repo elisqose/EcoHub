@@ -20,12 +20,15 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-
     @JsonIgnoreProperties({"password", "email", "posts", "receivedMessages", "followers", "following", "bio"})
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private User author;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
     @com.fasterxml.jackson.annotation.JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Post post;
 }

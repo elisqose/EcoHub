@@ -33,6 +33,7 @@ public class User {
     @OneToMany(mappedBy = "receiver")
     @com.fasterxml.jackson.annotation.JsonIgnore
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Message> receivedMessages;
 
     @ManyToMany
@@ -43,10 +44,12 @@ public class User {
 
     @JsonIgnoreProperties({"following", "followers", "password", "receivedMessages", "posts"})
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<User> following = new ArrayList<>();
 
     @ManyToMany(mappedBy = "following")
     @JsonIgnoreProperties({"following", "followers", "password", "receivedMessages", "posts"})
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<User> followers = new ArrayList<>();
 }
