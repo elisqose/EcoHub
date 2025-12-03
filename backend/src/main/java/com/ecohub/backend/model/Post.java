@@ -1,5 +1,6 @@
 package com.ecohub.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -33,6 +34,9 @@ public class Post {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties({"posts", "receivedMessages", "following", "followers", "password", "email", "bio"})
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private User author;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)

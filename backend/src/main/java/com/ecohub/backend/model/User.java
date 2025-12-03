@@ -42,14 +42,12 @@ public class User {
             joinColumns = @JoinColumn(name = "follower_id"),
             inverseJoinColumns = @JoinColumn(name = "followed_id"))
 
-    @JsonIgnoreProperties({"following", "followers", "password", "receivedMessages", "posts"})
-    @ToString.Exclude
+    @JsonIgnoreProperties({"following", "followers", "receivedMessages", "posts", "password", "email"})    @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<User> following = new ArrayList<>();
 
     @ManyToMany(mappedBy = "following")
-    @JsonIgnoreProperties({"following", "followers", "password", "receivedMessages", "posts"})
-    @ToString.Exclude
+    @JsonIgnoreProperties({"following", "followers", "receivedMessages", "posts", "password", "email"})    @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<User> followers = new ArrayList<>();
 }
