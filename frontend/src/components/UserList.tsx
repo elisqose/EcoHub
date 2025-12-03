@@ -16,20 +16,20 @@ export default function UserList({ title, users, currentUserId, profileOwnerId, 
     const isMyProfile = currentUserId === profileOwnerId;
 
     const handleRemove = async (e: React.MouseEvent, userInList: User) => {
-        e.stopPropagation(); // Evita di aprire il profilo cliccando il bottone
+        e.stopPropagation();
 
         if (!confirm("Sei sicuro?")) return;
 
         try {
             if (listType === 'FOLLOWING') {
-                // Smetto di seguire questa persona
+
                 await api.unfollow(currentUserId, userInList.id);
             } else {
-                // Rimuovo questa persona dai miei follower
+
                 await api.removeFollower(currentUserId, userInList.id);
             }
             alert("Fatto! Chiudi e riapri per vedere le modifiche.");
-            // In un'app reale aggiorneremmo lo stato locale qui, ma per semplicità va bene ricaricare al close
+
         } catch (err) {
             alert("Errore rimozione");
         }
@@ -77,7 +77,6 @@ export default function UserList({ title, users, currentUserId, profileOwnerId, 
                                 <span>@{user.username}</span>
                             </div>
 
-                            {/* Mostra bottone rimozione SOLO se sono sul MIO profilo */}
                             {isMyProfile && (
                                 <button
                                     onClick={(e) => handleRemove(e, user)}

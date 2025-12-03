@@ -6,11 +6,10 @@ import SupportButton from './SupportButton';
 
 interface PostCardProps {
     post: Post;
-    showActions?: boolean; // Per i moderatori
+    showActions?: boolean;
     onApprove?: (id: number) => void;
     onReject?: (id: number) => void;
 
-    // Props per utente proprietario
     isOwnPost?: boolean;
     onDelete?: (id: number) => void;
     onEdit?: (post: Post) => void;
@@ -21,7 +20,6 @@ export default function PostCard({ post, showActions, onApprove, onReject, isOwn
     const userString = localStorage.getItem('user');
     const currentUser: User | null = userString ? JSON.parse(userString) : null;
 
-    // Funzione per navigare al profilo dell'autore
     const handleUserClick = () => {
         navigate(`/profile/${post.author.id}`);
     };
@@ -29,10 +27,8 @@ export default function PostCard({ post, showActions, onApprove, onReject, isOwn
     return (
         <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
 
-            {/* Header Post */}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
 
-                {/* Info Autore (Cliccabile) */}
                 <div
                     onClick={handleUserClick}
                     style={{
@@ -43,7 +39,6 @@ export default function PostCard({ post, showActions, onApprove, onReject, isOwn
                     }}
                     title={`Vai al profilo di @${post.author.username}`}
                 >
-                    {/* AVATAR: Immagine o Iniziali */}
                     <div style={{
                         width: '40px', height: '40px', borderRadius: '50%',
                         backgroundColor: '#e0f2f1', color: '#00695c',
@@ -73,28 +68,23 @@ export default function PostCard({ post, showActions, onApprove, onReject, isOwn
                     </div>
                 </div>
 
-                {/* Badge Stato (Solo per autore/moderatore) */}
                 {post.status === 'PENDING' && <span style={{ backgroundColor: '#fff3e0', color: '#ef6c00', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', height: 'fit-content' }}>In Attesa</span>}
                 {post.status === 'REQUIRES_CHANGES' && <span style={{ backgroundColor: '#fff3e0', color: '#c62828', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', height: 'fit-content' }}>Richiede Modifiche</span>}
             </div>
 
-            {/* Contenuto */}
             <h3 style={{ margin: '10px 0', fontSize: '18px' }}>{post.title}</h3>
             <p style={{ lineHeight: '1.6', color: '#444' }}>{post.content}</p>
 
-            {/* Immagine Post */}
             {post.imageUrl && (
                 <img src={post.imageUrl} alt="post" style={{width: '100%', borderRadius: '8px', marginTop: '10px', maxHeight: '300px', objectFit: 'cover'}} />
             )}
 
-            {/* Tags */}
             <div style={{ display: 'flex', gap: '8px', marginTop: '15px', flexWrap: 'wrap' }}>
                 {post.tags.map(tag => (
                     <TagBadge key={tag.id} name={tag.name} />
                 ))}
             </div>
 
-            {/* BOTTONI AZIONI PROPRIETARIO (Modifica / Elimina) */}
             {isOwnPost && (onEdit || onDelete) && (
                 <div style={{ marginTop: '15px', borderTop: '1px solid #eee', paddingTop: '10px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                     {onEdit && post.status !== 'APPROVED' && (
@@ -117,15 +107,12 @@ export default function PostCard({ post, showActions, onApprove, onReject, isOwn
                 </div>
             )}
 
-            {/* Toolbar Azioni Utente (Supporto) - MODIFICATO: Rimosso !isOwnPost */}
-            {/* Ora il pulsante e il contatore si vedono SEMPRE (tranne in moderazione pending) */}
             {!showActions && (
                 <div style={{ marginTop: '15px', display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <SupportButton post={post} currentUser={currentUser} />
                 </div>
             )}
 
-            {/* Toolbar Moderatore */}
             {showActions && onApprove && onReject && (
                 <div style={{ borderTop: '1px solid #eee', marginTop: '15px', paddingTop: '15px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                     <button onClick={() => onReject(post.id)} style={{ padding: '8px 15px', border: '1px solid #ef5350', color: '#ef5350', backgroundColor: 'white', borderRadius: '4px', cursor: 'pointer' }}>Rifiuta</button>
@@ -133,7 +120,6 @@ export default function PostCard({ post, showActions, onApprove, onReject, isOwn
                 </div>
             )}
 
-            {/* Sezione Commenti */}
             {!showActions && (
                 <CommentSection post={post} currentUser={currentUser} />
             )}

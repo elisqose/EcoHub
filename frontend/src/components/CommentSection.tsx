@@ -9,16 +9,13 @@ interface CommentSectionProps {
 }
 
 export default function CommentSection({ post, currentUser }: CommentSectionProps) {
-    // Inizializziamo lo stato con i commenti che arrivano dal post
     const [comments, setComments] = useState<Comment[]>(post.comments || []);
     const [showComments, setShowComments] = useState(false);
 
     const handleNewComment = (newComment: Comment) => {
-        // Aggiungiamo il nuovo commento alla lista esistente
         setComments([...comments, newComment]);
     };
 
-    // --- FUNZIONE ELIMINAZIONE COMMENTO ---
     const handleDeleteComment = async (commentId: number) => {
         if (!currentUser) return;
 
@@ -39,7 +36,7 @@ export default function CommentSection({ post, currentUser }: CommentSectionProp
 
     return (
         <div style={{ marginTop: '15px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
-            {/* Pulsante Toggle */}
+
             <button
                 onClick={() => setShowComments(!showComments)}
                 style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '14px', padding: 0 }}
@@ -47,15 +44,13 @@ export default function CommentSection({ post, currentUser }: CommentSectionProp
                 {showComments ? 'Nascondi commenti' : `Mostra commenti (${comments.length})`}
             </button>
 
-            {/* Area Commenti */}
             {showComments && (
                 <div style={{ marginTop: '10px' }}>
-                    {/* Lista Commenti */}
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         {comments.length === 0 && <p style={{ fontSize: '13px', color: '#999' }}>Nessun commento. Sii il primo!</p>}
 
                         {comments.map(comment => {
-                            // Verifica permessi
                             const isModerator = currentUser?.role === 'MODERATOR';
                             const isAuthor = currentUser?.id === comment.author?.id;
                             const canDelete = isModerator || isAuthor;
@@ -67,16 +62,13 @@ export default function CommentSection({ post, currentUser }: CommentSectionProp
                                     borderRadius: '8px',
                                     border: isModerator && !isAuthor ? '1px solid #ffe0b2' : 'none' // Evidenzia ai mod i commenti altrui
                                 }}>
-                                    {/* Header Commento: Username a SX, (Cestino + Data) a DX */}
+
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', marginBottom: '4px' }}>
 
-                                        {/* Username */}
                                         <strong>{comment.author?.username || "Utente sconosciuto"}</strong>
 
-                                        {/* Gruppo Azioni e Data */}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
 
-                                            {/* Bottone Elimina (Ora è PRIMA della data e non in position absolute) */}
                                             {canDelete && (
                                                 <button
                                                     onClick={() => handleDeleteComment(comment.id)}
@@ -105,7 +97,6 @@ export default function CommentSection({ post, currentUser }: CommentSectionProp
                         })}
                     </div>
 
-                    {/* Form Aggiunta Commento (Solo se loggato) */}
                     {currentUser && (
                         <CommentForm
                             postId={post.id}

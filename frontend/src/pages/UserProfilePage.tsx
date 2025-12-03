@@ -11,35 +11,27 @@ export default function UserProfilePage() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    // Stati Dati
     const [profileUser, setProfileUser] = useState<User | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Stati Modali
     const [modalType, setModalType] = useState<'NONE' | 'FOLLOWERS' | 'FOLLOWING'>('NONE');
     const [editingPost, setEditingPost] = useState<Post | null>(null);
 
-    // Stati Edit Bio
     const [isEditingBio, setIsEditingBio] = useState(false);
     const [tempBio, setTempBio] = useState('');
 
-    // Stati Richiesta Moderatore
     const [isModRequestOpen, setIsModRequestOpen] = useState(false);
     const [modMotivation, setModMotivation] = useState('');
 
-    // Ref per upload foto
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Utente Loggato
     const storedUser = localStorage.getItem('user');
     const currentUser: User | null = storedUser ? JSON.parse(storedUser) : null;
 
-    // Logica ID Profilo
     const userIdToLoad = id ? parseInt(id) : currentUser?.id;
     const isOwnProfile = !id || (!!currentUser && parseInt(id!) === currentUser.id);
 
-    // Check Follow
     const isFollowing = profileUser?.followers?.some(u => u.id === currentUser?.id);
 
     useEffect(() => {
@@ -53,7 +45,7 @@ export default function UserProfilePage() {
         try {
             const userData = await api.getUserProfile(userIdToLoad);
             setProfileUser(userData);
-            setTempBio(userData.bio || ''); // Pre-popola la bio per l'edit
+            setTempBio(userData.bio || '');
             const userPosts = await api.getUserPosts(userIdToLoad);
             setPosts(userPosts);
         } catch (error) {
@@ -63,7 +55,6 @@ export default function UserProfilePage() {
         }
     };
 
-    // --- AZIONE: CAMBIO FOTO ---
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || !currentUser) return;
@@ -74,11 +65,10 @@ export default function UserProfilePage() {
             try {
                 await api.updateProfilePicture(currentUser.id, base64String);
 
-                // Aggiorna stato locale
                 if (profileUser) {
                     setProfileUser({ ...profileUser, profilePicture: base64String });
                 }
-                // Aggiorna localStorage
+
                 const updatedCurrentUser = { ...currentUser, profilePicture: base64String };
                 localStorage.setItem('user', JSON.stringify(updatedCurrentUser));
 
@@ -91,7 +81,6 @@ export default function UserProfilePage() {
         reader.readAsDataURL(file);
     };
 
-    // --- AZIONE: FOLLOW / UNFOLLOW ---
     const handleToggleFollow = async () => {
         if (!currentUser || !profileUser) return;
         try {
@@ -108,14 +97,11 @@ export default function UserProfilePage() {
         }
     };
 
-    // --- AZIONE: CONTATTA ---
     const handleContact = () => {
         if (!profileUser) return;
-        // MODIFICA: Invece dell'alert, navighiamo passando lo username nello "state"
         navigate('/messages', { state: { targetUsername: profileUser.username } });
     };
 
-    // --- AZIONE: SALVA BIO ---
     const handleSaveBio = async () => {
         if(!currentUser) return;
         try {
@@ -131,7 +117,6 @@ export default function UserProfilePage() {
         }
     };
 
-    // --- AZIONE: POST ---
     const handleDeletePost = async (postId: number) => {
         if (!confirm("Sei sicuro di voler eliminare questo post?")) return;
         try {
@@ -149,7 +134,6 @@ export default function UserProfilePage() {
         setEditingPost(post);
     };
 
-    // --- AZIONE: DIVENTA MODERATORE ---
     const handleBecomeModerator = async () => {
         if (!modMotivation.trim()) return alert("Inserisci una motivazione!");
         if (!profileUser) return;
@@ -165,7 +149,6 @@ export default function UserProfilePage() {
         }
     };
 
-    // --- RENDER ---
     if (!currentUser) return (
         <div style={{ padding: '40px', textAlign: 'center' }}>
             <h2 style={{ color: '#2e7d32' }}>EcoHub 🌱</h2>
@@ -186,7 +169,6 @@ export default function UserProfilePage() {
 
             <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
 
-                {/* --- HEADER PROFILO --- */}
                 <div style={{
                     backgroundColor: 'white',
                     padding: '30px',
@@ -195,7 +177,7 @@ export default function UserProfilePage() {
                     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                     textAlign: 'center'
                 }}>
-                    {/* AVATAR + EDIT */}
+
                     <div style={{ position: 'relative', width: '100px', height: '100px', margin: '0 auto 15px auto' }}>
                         {profileUser?.profilePicture ? (
                             <img
@@ -251,7 +233,6 @@ export default function UserProfilePage() {
                         </span>
                     )}
 
-                    {/* BOTTONI FOLLOW / CONTATTA (Solo se non è il mio profilo) */}
                     {!isOwnProfile && (
                         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
                             <button
@@ -277,7 +258,6 @@ export default function UserProfilePage() {
                         </div>
                     )}
 
-                    {/* SEZIONE BIO (Visualizzazione / Modifica) */}
                     <div style={{ marginTop: '15px' }}>
                         {isOwnProfile && isEditingBio ? (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
@@ -310,7 +290,6 @@ export default function UserProfilePage() {
 
                     {isOwnProfile && <p style={{ fontSize: '14px', color: '#888' }}>{profileUser?.email}</p>}
 
-                    {/* STATISTICHE (Cliccabili) */}
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', marginTop: '25px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
                         <div style={{ textAlign: 'center' }}>
                             <strong style={{ display: 'block', fontSize: '20px', color: '#333' }}>{posts.length}</strong>
@@ -342,7 +321,6 @@ export default function UserProfilePage() {
                         </div>
                     </div>
 
-                    {/* RICHIESTA MODERATORE (Solo se profilo mio e non sono già mod) */}
                     {isOwnProfile && profileUser?.role !== 'MODERATOR' && (
                         <div style={{ marginTop: '20px', textAlign: 'center' }}>
                             {!isModRequestOpen ? (
@@ -379,8 +357,6 @@ export default function UserProfilePage() {
                         </div>
                     )}
                 </div>
-
-                {/* --- SEZIONI POST --- */}
 
                 {pendingPosts.length > 0 && (
                     <div style={{ marginBottom: '30px' }}>
@@ -441,8 +417,6 @@ export default function UserProfilePage() {
                     )}
                 </div>
             </div>
-
-            {/* --- MODALI --- */}
 
             {modalType === 'FOLLOWERS' && profileUser?.followers && (
                 <UserList

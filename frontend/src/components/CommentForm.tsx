@@ -19,8 +19,8 @@ export default function CommentForm({ postId, currentUser, onCommentAdded }: Com
         setIsSubmitting(true);
         try {
             const newComment = await api.addComment(postId, currentUser.id, text);
-            onCommentAdded(newComment); // Avvisa il genitore!
-            setText(''); // Pulisce il campo
+            onCommentAdded(newComment);
+            setText('');
         } catch (error) {
             alert('Errore invio commento');
             console.error(error);

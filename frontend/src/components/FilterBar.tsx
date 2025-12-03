@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from '../services/api'; // Assicurati che api.getTags sia implementato come visto prima
+import { api } from '../services/api';
 import type { Tag } from '../types';
 
 interface FilterBarProps {
@@ -11,7 +11,6 @@ export default function FilterBar({ selectedTag, onSelectTag }: FilterBarProps) 
     const [tags, setTags] = useState<Tag[]>([]);
 
     useEffect(() => {
-        // Chiediamo al backend quali tag esistono nel database (quelli creati da DataInitializer)
         const fetchTags = async () => {
             try {
                 const data = await api.getTags();

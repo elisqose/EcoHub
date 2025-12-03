@@ -10,7 +10,6 @@ async function request(endpoint: string, options?: RequestInit) {
     });
 
     if (!response.ok) {
-        // Gestione errori più dettagliata se il backend manda un messaggio
         const errorText = await response.text();
         throw new Error(errorText || `Errore API: ${response.statusText}`);
     }
@@ -20,7 +19,6 @@ async function request(endpoint: string, options?: RequestInit) {
 }
 
 export const api = {
-    // --- AUTENTICAZIONE ---
     login: (username: string, password: string) =>
         request('/auth/login', {
             method: 'POST',
@@ -33,7 +31,6 @@ export const api = {
             body: JSON.stringify(user)
         }),
 
-    // --- POST ---
     getFeed: () => request('/posts'),
 
     getUserPosts: (userId: number) => request(`/posts/user/${userId}`),
@@ -72,10 +69,8 @@ export const api = {
             method: 'DELETE'
         }),
 
-    // --- TAGS ---
     getTags: () => request('/tags'),
 
-    // --- COMMENTI & SUPPORTO ---
     addComment: async (postId: number, userId: number, text: string) => {
         return request(`/posts/${postId}/comments?userId=${userId}`, {
             method: 'POST',
@@ -94,7 +89,6 @@ export const api = {
         return request(`/posts/${postId}/support?userId=${userId}`, { method: 'POST' });
     },
 
-    // --- MESSAGGI ---
     getReceivedMessages: (userId: number) =>
         request(`/messages/received/${userId}`),
 
@@ -110,7 +104,6 @@ export const api = {
     deleteMessage: (messageId: number) =>
         request(`/messages/${messageId}`, { method: 'DELETE' }),
 
-    // --- UTENTI ---
     getUserProfile: (id: number) => request(`/users/${id}`),
 
     updateProfilePicture: (userId: number, base64Image: string) =>
@@ -127,7 +120,6 @@ export const api = {
             method: 'POST'
         }),
 
-    // Moderazione Utenti (Richiesta, Promozione, Rifiuto)
     requestModeration: (username: string, motivation: string) =>
         request('/users/request-moderation', {
             method: 'POST',
@@ -140,7 +132,6 @@ export const api = {
     rejectUser: (username: string) =>
         request(`/users/reject-moderation/${username}`, { method: 'POST' }),
 
-    // --- MODERAZIONE POST ---
     getPendingPosts: () => request('/moderation/pending'),
 
     approvePost: (id: number) =>

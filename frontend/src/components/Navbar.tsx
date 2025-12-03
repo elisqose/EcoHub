@@ -21,19 +21,18 @@ export default function Navbar({ user }: NavbarProps) {
         navigate('/');
     };
 
-    // Stile comune per TUTTI i bottoni per garantire la stessa dimensione
     const commonButtonStyle = {
-        height: isMobile ? '34px' : '40px', // Altezza fissa uguale per tutti
-        padding: isMobile ? '0 10px' : '0 20px', // Padding laterale (verticale gestito da height)
+        height: isMobile ? '34px' : '40px',
+        padding: isMobile ? '0 10px' : '0 20px',
         borderRadius: '20px',
         cursor: 'pointer',
-        fontWeight: 'bold' as const, // Fix per TypeScript
+        fontWeight: 'bold' as const,
         fontSize: isMobile ? '12px' : '14px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center', // Centra il testo
+        justifyContent: 'center',
         gap: '6px',
-        whiteSpace: 'nowrap' as const // Evita che il testo vada a capo
+        whiteSpace: 'nowrap' as const
     };
 
     return (
@@ -51,7 +50,6 @@ export default function Navbar({ user }: NavbarProps) {
             gap: isMobile ? '10px' : '0'
         }}>
 
-            {/* SINISTRA: Logo */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'center' : 'flex-start' }}>
                 <h2
                     style={{ color: '#2e7d32', margin: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: isMobile ? '22px' : '24px' }}
@@ -61,7 +59,6 @@ export default function Navbar({ user }: NavbarProps) {
                     🌱 EcoHub
                 </h2>
 
-                {/* Tasto Moderatore (Desktop) */}
                 {user?.role === 'MODERATOR' && !isMobile && (
                     <button
                         onClick={() => navigate('/moderation')}
@@ -77,7 +74,6 @@ export default function Navbar({ user }: NavbarProps) {
                 )}
             </div>
 
-            {/* DESTRA: Azioni Utente */}
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -87,7 +83,6 @@ export default function Navbar({ user }: NavbarProps) {
                 width: isMobile ? '100%' : 'auto'
             }}>
 
-                {/* Tasto Moderatore (Mobile) */}
                 {user?.role === 'MODERATOR' && isMobile && (
                     <button
                         onClick={() => navigate('/moderation')}
@@ -102,27 +97,25 @@ export default function Navbar({ user }: NavbarProps) {
                     </button>
                 )}
 
-                {/* Cerca */}
                 <button
                     onClick={() => navigate('/search-users')}
                     style={{
                         ...commonButtonStyle,
                         backgroundColor: 'transparent',
                         color: '#555',
-                        border: '1px solid #ccc', // Bordo visibile
+                        border: '1px solid #ccc',
                     }}
                 >
                     🔍 {isMobile ? '' : 'Cerca'}
                 </button>
 
-                {/* Nuovo Post */}
                 <button
                     onClick={() => navigate('/create-post')}
                     style={{
                         ...commonButtonStyle,
                         backgroundColor: '#2e7d32',
                         color: 'white',
-                        border: '1px solid transparent', // Bordo invisibile (per pareggiare altezza)
+                        border: '1px solid transparent',
                         boxShadow: '0 2px 5px rgba(46, 125, 50, 0.2)'
                     }}
                 >
@@ -130,27 +123,25 @@ export default function Navbar({ user }: NavbarProps) {
                     {isMobile ? 'Post' : 'Nuovo Post'}
                 </button>
 
-                {/* Messaggi */}
                 <button
                     onClick={() => navigate('/messages')}
                     style={{
                         ...commonButtonStyle,
                         backgroundColor: '#e8f5e9',
                         color: '#2e7d32',
-                        border: '1px solid transparent', // Bordo invisibile
+                        border: '1px solid transparent',
                     }}
                 >
                     📩 {isMobile ? '' : 'Messaggi'}
                 </button>
 
-                {/* Profilo Utente */}
                 <div
                     onClick={() => navigate('/profile')}
                     style={{
                         ...commonButtonStyle,
                         backgroundColor: 'transparent',
                         border: isMobile ? '1px solid #eee' : '1px solid transparent',
-                        padding: '0 5px', // Leggermente meno padding per l'avatar
+                        padding: '0 5px',
                         gap: '8px'
                     }}
                     title="Vai al tuo profilo"
@@ -188,7 +179,6 @@ export default function Navbar({ user }: NavbarProps) {
                     </div>
                 </div>
 
-                {/* Logout */}
                 <button
                     onClick={handleLogout}
                     style={{

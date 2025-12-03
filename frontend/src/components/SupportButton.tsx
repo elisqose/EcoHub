@@ -22,13 +22,13 @@ export default function SupportButton({ post, currentUser }: SupportButtonProps)
 
         setLoading(true);
         try {
-            await api.addSupport(post.id, currentUser.id); // Ora il backend fa toggle
+            await api.addSupport(post.id, currentUser.id);
 
             if (supported) {
-                setCount(count - 1); // Ho tolto il like
+                setCount(count - 1);
                 setSupported(false);
             } else {
-                setCount(count + 1); // Ho messo il like
+                setCount(count + 1);
                 setSupported(true);
             }
         } catch (error) {
@@ -43,7 +43,7 @@ export default function SupportButton({ post, currentUser }: SupportButtonProps)
             onClick={handleSupport}
             style={{
                 display: 'flex',
-                alignItems: 'baseline', // <--- CORRETTO: Allinea il testo e il numero sulla riga di scrittura
+                alignItems: 'baseline',
                 gap: '5px',
                 padding: '6px 12px',
                 borderRadius: '20px',
@@ -54,7 +54,7 @@ export default function SupportButton({ post, currentUser }: SupportButtonProps)
                 transition: 'all 0.2s'
             }}
         >
-            {/* MANTENUTA: FOGLIA VERDE al posto del cuore */}
+
             {supported ? '🍃 Supportato' : '🍂 Supporta'}
             <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{count}</span>
         </button>

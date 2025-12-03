@@ -12,11 +12,10 @@ interface EditPostProps {
 export default function EditPost({ post, userId, onClose, onUpdateSuccess }: EditPostProps) {
     const [title, setTitle] = useState(post.title);
     const [content, setContent] = useState(post.content);
-    // Inizializziamo con l'immagine attuale (se c'è) o stringa vuota
+
     const [imageUrl, setImageUrl] = useState(post.imageUrl || '');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Funzione per gestire il caricamento del file locale (copiata da CreatePostPage)
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -32,11 +31,11 @@ export default function EditPost({ post, userId, onClose, onUpdateSuccess }: Edi
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            // Ora passiamo anche 'imageUrl' aggiornata
+
             await api.updatePost(post.id, userId, {
                 title,
                 content,
-                imageUrl // <--- Invia la nuova immagine (o quella vecchia/vuota)
+                imageUrl
             });
             alert("Post aggiornato! È tornato in moderazione.");
             onUpdateSuccess();
@@ -61,13 +60,13 @@ export default function EditPost({ post, userId, onClose, onUpdateSuccess }: Edi
                 borderRadius: '8px',
                 width: '90%',
                 maxWidth: '500px',
-                maxHeight: '90vh', // Limite altezza per schermi piccoli
-                overflowY: 'auto'  // Scroll se il contenuto è lungo
+                maxHeight: '90vh',
+                overflowY: 'auto'
             }}>
                 <h2 style={{ marginTop: 0, color: '#2e7d32' }}>✏️ Modifica Post</h2>
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {/* TITOLO */}
+
                     <div>
                         <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Titolo</label>
                         <input
@@ -79,11 +78,9 @@ export default function EditPost({ post, userId, onClose, onUpdateSuccess }: Edi
                         />
                     </div>
 
-                    {/* SEZIONE IMMAGINE */}
                     <div style={{ border: '1px dashed #ccc', padding: '15px', borderRadius: '4px', backgroundColor: '#fafafa' }}>
                         <p style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 'bold', color: '#555' }}>Immagine:</p>
 
-                        {/* Anteprima se presente */}
                         {imageUrl && (
                             <div style={{ textAlign: 'center', marginBottom: '10px' }}>
                                 <img
@@ -101,7 +98,6 @@ export default function EditPost({ post, userId, onClose, onUpdateSuccess }: Edi
                             </div>
                         )}
 
-                        {/* Input URL */}
                         <input
                             type="text"
                             placeholder="Incolla un URL (https://...)"
@@ -112,7 +108,6 @@ export default function EditPost({ post, userId, onClose, onUpdateSuccess }: Edi
 
                         <div style={{ textAlign: 'center', margin: '5px 0', fontSize: '12px', color: '#999' }}>- OPPURE CAMBIA FILE -</div>
 
-                        {/* Input File */}
                         <input
                             type="file"
                             accept="image/*"
@@ -121,7 +116,6 @@ export default function EditPost({ post, userId, onClose, onUpdateSuccess }: Edi
                         />
                     </div>
 
-                    {/* CONTENUTO */}
                     <div>
                         <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Contenuto</label>
                         <textarea
@@ -133,7 +127,6 @@ export default function EditPost({ post, userId, onClose, onUpdateSuccess }: Edi
                         />
                     </div>
 
-                    {/* BOTTONI */}
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
                         <button type="button" onClick={onClose} style={{ padding: '8px 15px', border: 'none', background: 'none', cursor: 'pointer', color: '#666' }}>Annulla</button>
                         <button
