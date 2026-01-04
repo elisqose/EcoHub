@@ -17,7 +17,7 @@ export default function ModeratorPage() {
         if (user && user.role === 'MODERATOR') {
             loadPending();
         }
-    }, [user]);
+    }, [user?.id]);
 
     const loadPending = async () => {
         try {

@@ -31,7 +31,7 @@ export default function MessagesPage() {
         if (currentUser) {
             loadMessages();
         }
-    }, [activeTab, currentUser]);
+    }, [activeTab, currentUser?.id]);
 
     const loadMessages = async () => {
         if (!currentUser) return;
