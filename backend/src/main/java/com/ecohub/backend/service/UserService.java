@@ -25,7 +25,7 @@ public class UserService {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new RuntimeException("Username già utilizzato! Scegline un altro.");
         }
-        // Impostiamo valori di default
+
         user.setRole(UserRole.STANDARD);
         user.setFollowing(new java.util.ArrayList<>());
         user.setFollowers(new java.util.ArrayList<>());
@@ -43,14 +43,12 @@ public class UserService {
         }
     }
 
-    // 1. Aggiorna Bio
     public User updateBio(Long userId, String newBio) {
         User user = userRepository.findById(userId).orElseThrow();
         user.setBio(newBio);
         return userRepository.save(user);
     }
 
-    // 2. Smetti di seguire (Unfollow)
     public void unfollowUser(Long followerId, Long followedId) {
         User follower = userRepository.findById(followerId).orElseThrow();
         User followed = userRepository.findById(followedId).orElseThrow();
@@ -61,19 +59,16 @@ public class UserService {
         }
     }
 
-    // 3. Rimuovi Follower (Forza qualcuno a non seguirti più)
     public void removeFollower(Long userId, Long followerId) {
-        User user = userRepository.findById(userId).orElseThrow(); // Io
-        User followerToRemove = userRepository.findById(followerId).orElseThrow(); // Quello che voglio rimuovere
+        User user = userRepository.findById(userId).orElseThrow();
+        User followerToRemove = userRepository.findById(followerId).orElseThrow();
 
-        // Rimuoviamo me dalla sua lista di following
         if(followerToRemove.getFollowing().contains(user)) {
             followerToRemove.getFollowing().remove(user);
             userRepository.save(followerToRemove);
         }
     }
 
-    // Metodo base per inviare messaggi (usato anche internamente per le notifiche admin)
     public Message sendMessage(Long senderId, Long receiverId, String content) {
         User sender = userRepository.findById(senderId).orElseThrow(() -> new RuntimeException("Mittente non trovato"));
         User receiver = userRepository.findById(receiverId).orElseThrow(() -> new RuntimeException("Destinatario non trovato"));
@@ -82,31 +77,9 @@ public class UserService {
         return messageRepository.save(msg);
     }
 
-    // --- METODI CORRETTI PER I MESSAGGI (FIX ERRORE) ---
 
-    // Recupera SOLO i messaggi ricevuti (Posta in Arrivo)
     public List<Message> getInbox(Long userId) {
         return messageRepository.findByReceiver_IdOrderByTimestampDesc(userId);
-    }
-
-    // Recupera SOLO i messaggi inviati (Posta Inviata)
-    public List<Message> getOutbox(Long userId) {
-        // Assicurati di aver aggiunto findBySender_IdOrderByTimestampDesc nel MessageRepository come indicato prima!
-        return messageRepository.findBySender_IdOrderByTimestampDesc(userId);
-    }
-
-    // --- FINE FIX ---
-
-    public void requestModeration(String username, String motivation) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Utente non trovato: " + username));
-
-        User admin = userRepository.findByUsername("admin")
-                .orElseThrow(() -> new RuntimeException("Admin non trovato nel sistema"));
-
-        String content = "RICHIESTA MODERATORE\n\nL'utente @" + username + " chiede di diventare moderatore.\n\nMotivazione:\n" + motivation;
-
-        sendMessage(user.getId(), admin.getId(), content);
     }
 
     public User getUserById(Long id) {
@@ -121,6 +94,18 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Utente non trovato"));
         user.setProfilePicture(base64Image);
         return userRepository.save(user);
+    }
+
+    public void requestModeration(String username, String motivation) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utente non trovato: " + username));
+
+        User admin = userRepository.findByUsername("admin")
+                .orElseThrow(() -> new RuntimeException("Admin non trovato nel sistema"));
+
+        String content = "RICHIESTA MODERATORE\n\nL'utente @" + username + " chiede di diventare moderatore.\n\nMotivazione:\n" + motivation;
+
+        sendMessage(user.getId(), admin.getId(), content);
     }
 
     public void promoteToModerator(String username) {
@@ -144,9 +129,5 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Admin non trovato"));
 
         sendMessage(admin.getId(), user.getId(), "❌ Ciao " + username + ", ci dispiace informarti che la tua richiesta per diventare Moderatore non è stata accettata al momento.");
-    }
-
-    public void deleteMessage(Long messageId) {
-        messageRepository.deleteById(messageId);
     }
 }

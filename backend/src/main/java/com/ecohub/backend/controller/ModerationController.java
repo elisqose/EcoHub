@@ -12,7 +12,8 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 
 public class ModerationController {
-    @Autowired private ModerationService moderationService;
+    @Autowired
+    private ModerationService moderationService;
 
     @GetMapping("/pending")
     public List<Post> getPending() {

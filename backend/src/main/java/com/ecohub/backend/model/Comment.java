@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Data
@@ -27,7 +28,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "post_id")
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Post post;

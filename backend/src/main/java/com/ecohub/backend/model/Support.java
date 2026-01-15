@@ -2,6 +2,7 @@ package com.ecohub.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Data
@@ -19,7 +20,7 @@ public class Support {
     private User user;
 
     @ManyToOne
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Post post;

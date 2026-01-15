@@ -15,8 +15,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByAuthor_IdOrderByCreationDateDesc(Long userId);
 
-    List<Post> findByTitleContainingOrContentContainingAndStatus(String title, String content, PostStatus status);
-
     List<Post> findByStatus(PostStatus status);
 }
 

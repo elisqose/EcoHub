@@ -19,7 +19,6 @@ public class MessageService {
     @Autowired
     private UserRepository userRepository;
 
-    // Invia messaggio
     public Message sendMessage(Long senderId, String receiverUsername, String content) {
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new RuntimeException("Mittente non trovato"));
@@ -40,12 +39,10 @@ public class MessageService {
         return messageRepository.save(message);
     }
 
-    // Recupera Posta in Arrivo
     public List<Message> getReceivedMessages(Long userId) {
         return messageRepository.findByReceiver_IdOrderByTimestampDesc(userId);
     }
 
-    // Recupera Posta Inviata
     public List<Message> getSentMessages(Long userId) {
         return messageRepository.findBySender_IdOrderByTimestampDesc(userId);
     }

@@ -143,11 +143,9 @@ public class DataInitializer implements CommandLineRunner {
 
             comments.add(new Comment(null, "Che belli! Che varietà sono?", LocalDateTime.now().minusDays(4), luigi, posts.get(0)));
             comments.add(new Comment(null, "Datterini, dolcissimi!", LocalDateTime.now().minusDays(4).plusHours(1), mario, posts.get(0)));
-            comments.add(new Comment(null, "Wow, sembrano deliziosi 🍅", LocalDateTime.now().minusDays(3), sara, posts.get(0)));
-
+            comments.add(new Comment(null, "Wow, sembrano deliziosi 🍎", LocalDateTime.now().minusDays(3), sara, posts.get(0)));
             comments.add(new Comment(null, "Grazie per la chiarezza, sbagliavo sempre.", LocalDateTime.now().minusDays(2), giulia, posts.get(1)));
             comments.add(new Comment(null, "Esatto, il PLA va conferito correttamente.", LocalDateTime.now().minusDays(2), marco, posts.get(1)));
-
             comments.add(new Comment(null, "Adoro quella giacca!", LocalDateTime.now().minusDays(1), sara, posts.get(2)));
 
             commentRepository.saveAll(comments);
@@ -155,17 +153,11 @@ public class DataInitializer implements CommandLineRunner {
             List<Message> messages = new ArrayList<>();
 
             messages.add(new Message(null, "Ciao Mario! Per l'orto usi concime liquido?", LocalDateTime.now().minusDays(2), luigi, mario));
-
             messages.add(new Message(null, "Ciao! No, uso solo il compost che faccio io col bidone in balcone. Funziona alla grande.", LocalDateTime.now().minusDays(2).plusHours(2), mario, luigi));
-
             messages.add(new Message(null, "Ottimo, devo provare anche io. Grazie!", LocalDateTime.now().minusDays(2).plusHours(3), luigi, mario));
-
             messages.add(new Message(null, "Ciao Sara, dove compri i legumi sfusi a Milano?", LocalDateTime.now().minusDays(1), giulia, sara));
-
             messages.add(new Message(null, "Benvenuto su EcoHub Marco! 🌿\nSiamo felici di avere un ingegnere nel gruppo. Ricordati di leggere il regolamento prima di postare.", LocalDateTime.now().minusDays(5), admin, marco));
-
             messages.add(new Message(null, "⚠️ AVVISO MODERAZIONE\n\nIl tuo post 'Odio il traffico!!!' è stato rimosso perché violava le linee guida sulla comunicazione non violenta. Ti invitiamo a mantenere toni costruttivi.", LocalDateTime.now().minusDays(10), admin, sara));
-
             messages.add(new Message(null, "✏️ Il moderatore ha richiesto modifiche al tuo post 'Come riciclare batterie'.\n\nNota: Info errata! Correggi indicando i contenitori RAEE.", LocalDateTime.now().minusDays(1), admin, marco));
 
             messageRepository.saveAll(messages);

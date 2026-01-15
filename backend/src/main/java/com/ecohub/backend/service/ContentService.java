@@ -16,11 +16,8 @@ public class ContentService {
     @Autowired private CommentRepository commentRepository;
     @Autowired private SupportRepository supportRepository;
     @Autowired private UserRepository userRepository;
-
-    // Iniettiamo MessageService per inviare la notifica
     @Autowired private MessageService messageService;
 
-    // ... (Mantieni i metodi createPost, updatePost, deletePost come sono) ...
     public Post createPost(Post post, Long userId, List<String> tagNames) {
         User author = userRepository.findById(userId).orElseThrow();
         post.setAuthor(author);
@@ -59,7 +56,6 @@ public class ContentService {
         postRepository.delete(post);
     }
 
-    // ... (Mantieni getPublicFeed, getPostDetail, getPostsByTag) ...
     public List<Post> getPublicFeed() {
         return postRepository.findByStatusOrderByCreationDateDesc(PostStatus.APPROVED);
     }
@@ -72,7 +68,6 @@ public class ContentService {
         return postRepository.findByTags_NameAndStatus(tagName, PostStatus.APPROVED);
     }
 
-    // --- AGGIUNTA COMMENTO (Già presente, assicuriamoci funzioni) ---
     public Comment addComment(Long postId, Long userId, String text) {
         Post post = postRepository.findById(postId).orElseThrow();
         User user = userRepository.findById(userId).orElseThrow();
@@ -80,7 +75,6 @@ public class ContentService {
         return commentRepository.save(comment);
     }
 
-    // --- NUOVO METODO: ELIMINAZIONE COMMENTO ---
     public void deleteComment(Long commentId, Long requesterId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Commento non trovato"));
@@ -88,7 +82,6 @@ public class ContentService {
         User requester = userRepository.findById(requesterId)
                 .orElseThrow(() -> new RuntimeException("Utente non trovato"));
 
-        // Logica permessi: Può cancellare se è l'autore del commento OPPURE se è un Moderatore
         boolean isAuthor = comment.getAuthor().getId().equals(requesterId);
         boolean isModerator = requester.getRole() == UserRole.MODERATOR;
 
@@ -96,9 +89,8 @@ public class ContentService {
             throw new RuntimeException("Non hai i permessi per eliminare questo commento.");
         }
 
-        // Se è un moderatore a cancellare il commento di qualcun altro -> INVIA NOTIFICA
         if (isModerator && !isAuthor) {
-            User admin = userRepository.findByUsername("admin").orElse(requester); // Mittente del messaggio sistema
+            User admin = userRepository.findByUsername("admin").orElse(requester);
             String warningText = "⚠️ AVVISO DI MODERAZIONE\n\nIl tuo commento sotto il post '" +
                     comment.getPost().getTitle() + "' è stato rimosso perché ritenuto offensivo o non idoneo.\n\n" +
                     "Testo rimosso: \"" + comment.getText() + "\"";
@@ -109,27 +101,20 @@ public class ContentService {
         commentRepository.delete(comment);
     }
 
-    // ... (Mantieni addSupport, getUserPosts) ...
     public void toggleSupport(Long postId, Long userId) {
         Post post = postRepository.findById(postId).orElseThrow();
         User user = userRepository.findById(userId).orElseThrow();
 
-        // Cerchiamo se esiste già il supporto
-        // Nota: Assicurati che nel Repository tu abbia un metodo per TROVARE il supporto, non solo exists
-        // Se non lo hai, aggiungiamo la logica qui sotto usando stream o query.
-        // Per semplicità, modifichiamo SupportRepository nel prossimo step.
-
         Support existingSupport = supportRepository.findByUserAndPost(user, post).orElse(null);
 
         if (existingSupport != null) {
-            supportRepository.delete(existingSupport); // RIMUOVI (Foglia tolta)
+            supportRepository.delete(existingSupport);
         } else {
-            supportRepository.save(new Support(null, user, post)); // AGGIUNGI (Foglia messa)
+            supportRepository.save(new Support(null, user, post));
         }
     }
 
     public List<Post> getUserPosts(Long userId) {
-        // Prima era: return postRepository.findByAuthor_Id(userId);
         return postRepository.findByAuthor_IdOrderByCreationDateDesc(userId);
     }
 }

@@ -13,11 +13,25 @@ import java.util.Map;
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
 public class UserController {
-    @Autowired private UserService userService;
+
+    @Autowired
+    private UserService userService;
 
     @PostMapping("/{id}/follow")
     public ResponseEntity<?> follow(@RequestParam Long followerId, @PathVariable Long id) {
         userService.followUser(followerId, id);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}/follow")
+    public ResponseEntity<?> unfollow(@RequestParam Long followerId, @PathVariable Long id) {
+        userService.unfollowUser(followerId, id);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}/follower")
+    public ResponseEntity<?> removeFollower(@PathVariable Long id, @RequestParam Long followerId) {
+        userService.removeFollower(id, followerId);
         return ResponseEntity.ok().build();
     }
 
@@ -49,32 +63,20 @@ public class UserController {
 
     @PostMapping("/request-moderation")
     public ResponseEntity<?> requestModeration(@RequestBody Map<String, String> payload) {
-        try {
             userService.requestModeration(payload.get("username"), payload.get("motivation"));
             return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     @PostMapping("/promote/{username}")
     public ResponseEntity<?> promoteUser(@PathVariable String username) {
-        try {
             userService.promoteToModerator(username);
             return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     @PostMapping("/reject-moderation/{username}")
     public ResponseEntity<?> rejectModeration(@PathVariable String username) {
-        try {
             userService.rejectModeratorRequest(username);
             return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     @PutMapping("/{id}/bio")
@@ -83,15 +85,4 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{id}/follow")
-    public ResponseEntity<?> unfollow(@RequestParam Long followerId, @PathVariable Long id) {
-        userService.unfollowUser(followerId, id);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/{id}/follower")
-    public ResponseEntity<?> removeFollower(@PathVariable Long id, @RequestParam Long followerId) {
-        userService.removeFollower(id, followerId);
-        return ResponseEntity.ok().build();
-    }
 }

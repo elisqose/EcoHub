@@ -12,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/posts")
 @CrossOrigin(origins = "*")
+
 public class PostController {
     @Autowired
     private ContentService contentService;
@@ -51,16 +52,9 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}/comments/{commentId}")
-    public ResponseEntity<?> deleteComment(
-            @PathVariable Long postId,
-            @PathVariable Long commentId,
-            @RequestParam Long userId) {
-        try {
-            contentService.deleteComment(commentId, userId);
-            return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<?> deleteComment(@PathVariable Long postId, @PathVariable Long commentId, @RequestParam Long userId) {
+        contentService.deleteComment(commentId, userId);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/support")

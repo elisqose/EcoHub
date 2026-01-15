@@ -22,13 +22,15 @@ public class Message {
 
     @ManyToOne
     @JoinColumn(name = "sender_id")
-    @JsonIgnoreProperties({"posts", "receivedMessages", "following", "followers", "password", "email", "bio"})    @ToString.Exclude
+    @JsonIgnoreProperties({"posts", "receivedMessages", "following", "followers", "password", "email", "bio"})
+    @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private User sender;
 
     @ManyToOne
     @JoinColumn(name = "receiver_id")
-    @JsonIgnoreProperties({"posts", "receivedMessages", "following", "followers", "password", "email", "bio"})    @ToString.Exclude
+    @JsonIgnoreProperties({"posts", "receivedMessages", "following", "followers", "password", "email", "bio"})
+    @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private User receiver;
 }

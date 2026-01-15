@@ -1,6 +1,7 @@
 package com.ecohub.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.List;
@@ -31,7 +32,7 @@ public class User {
     private String profilePicture;
 
     @OneToMany(mappedBy = "receiver")
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<Message> receivedMessages;
@@ -42,12 +43,14 @@ public class User {
             joinColumns = @JoinColumn(name = "follower_id"),
             inverseJoinColumns = @JoinColumn(name = "followed_id"))
 
-    @JsonIgnoreProperties({"following", "followers", "receivedMessages", "posts", "password", "email"})    @ToString.Exclude
+    @JsonIgnoreProperties({"following", "followers", "receivedMessages", "posts", "password", "email"})
+    @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<User> following = new ArrayList<>();
 
     @ManyToMany(mappedBy = "following")
-    @JsonIgnoreProperties({"following", "followers", "receivedMessages", "posts", "password", "email"})    @ToString.Exclude
+    @JsonIgnoreProperties({"following", "followers", "receivedMessages", "posts", "password", "email"})
+    @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<User> followers = new ArrayList<>();
 }

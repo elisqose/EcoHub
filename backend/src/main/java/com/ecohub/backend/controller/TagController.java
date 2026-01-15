@@ -10,7 +10,8 @@ import java.util.List;
 @RequestMapping("/api/tags")
 @CrossOrigin(origins = "*")
 public class TagController {
-    @Autowired private TagRepository tagRepository;
+    @Autowired
+    private TagRepository tagRepository;
 
     @GetMapping
     public List<Tag> getAllTags() {
