@@ -12,7 +12,6 @@ interface EditPostProps {
 export default function EditPost({ post, userId, onClose, onUpdateSuccess }: EditPostProps) {
     const [title, setTitle] = useState(post.title);
     const [content, setContent] = useState(post.content);
-
     const [imageUrl, setImageUrl] = useState(post.imageUrl || '');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -30,8 +29,8 @@ export default function EditPost({ post, userId, onClose, onUpdateSuccess }: Edi
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-        try {
 
+        try {
             await api.updatePost(post.id, userId, {
                 title,
                 content,

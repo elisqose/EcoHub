@@ -22,10 +22,8 @@ export default function UserList({ title, users, currentUserId, profileOwnerId, 
 
         try {
             if (listType === 'FOLLOWING') {
-
                 await api.unfollow(currentUserId, userInList.id);
             } else {
-
                 await api.removeFollower(currentUserId, userInList.id);
             }
             alert("Fatto! Chiudi e riapri per vedere le modifiche.");

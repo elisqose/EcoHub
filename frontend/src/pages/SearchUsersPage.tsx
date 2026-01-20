@@ -114,7 +114,7 @@ export default function SearchUsersPage() {
                                         user.username.charAt(0).toUpperCase()
                                     )}
                                 </div>
-                                {/* ----------------------------------------------- */}
+
                                 <div>
                                     <strong style={{ display: 'block', fontSize: '18px', color: '#333' }}>@{user.username}</strong>
                                     <span style={{ color: '#888', fontSize: '14px' }}>{user.email}</span>

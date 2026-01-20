@@ -86,7 +86,8 @@ export const api = {
     },
 
     addSupport: async (postId: number, userId: number) => {
-        return request(`/posts/${postId}/support?userId=${userId}`, { method: 'POST' });
+        return request(`/posts/${postId}/support?userId=${userId}`, {
+            method: 'POST' });
     },
 
     getReceivedMessages: (userId: number) =>
@@ -102,7 +103,9 @@ export const api = {
         }),
 
     deleteMessage: (messageId: number) =>
-        request(`/messages/${messageId}`, { method: 'DELETE' }),
+        request(`/messages/${messageId}`, {
+            method: 'DELETE'
+        }),
 
     getUserProfile: (id: number) => request(`/users/${id}`),
 
@@ -127,10 +130,14 @@ export const api = {
         }),
 
     promoteUser: (username: string) =>
-        request(`/users/promote/${username}`, { method: 'POST' }),
+        request(`/users/promote/${username}`, {
+            method: 'POST'
+        }),
 
     rejectUser: (username: string) =>
-        request(`/users/reject-moderation/${username}`, { method: 'POST' }),
+        request(`/users/reject-moderation/${username}`, {
+            method: 'POST'
+        }),
 
     getPendingPosts: () => request('/moderation/pending'),
 

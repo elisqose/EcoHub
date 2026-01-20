@@ -9,7 +9,6 @@ export interface User {
     following?: User[];
 }
 
-// 1. Aggiungi questa nuova interfaccia
 export interface Support {
     id: number;
     user: User;
@@ -38,8 +37,6 @@ export interface Post {
     author: User;
     comments: Comment[];
     tags: Tag[];
-
-    // 2. Aggiungi questa riga fondamentale!
     supports: Support[];
 }
 
@@ -47,6 +44,6 @@ export interface Message {
     id: number;
     content: string;
     timestamp: string;
-    sender: User;   // Il backend restituisce l'intero oggetto User
-    receiver: User; // Il backend restituisce l'intero oggetto User
+    sender: User;
+    receiver: User;
 }

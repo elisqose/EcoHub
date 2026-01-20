@@ -29,9 +29,9 @@ export default function CreatePostPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
         try {
             const tagList = tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
-
             await api.createPost({
                 title,
                 content,
@@ -55,7 +55,7 @@ export default function CreatePostPage() {
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
                     <input
                         type="text"
-                        placeholder="Titolo accattivante..."
+                        placeholder="Titolo del post..."
                         value={title}
                         onChange={e => setTitle(e.target.value)}
                         style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ccc' }}
@@ -69,7 +69,7 @@ export default function CreatePostPage() {
                         <input
                             type="text"
                             placeholder="Incolla un URL (https://...)"
-                            value={imageUrl.startsWith('data:') ? '' : imageUrl} // Se è un file locale, non mostrare la stringa base64 nell'input URL
+                            value={imageUrl.startsWith('data:') ? '' : imageUrl}
                             onChange={e => setImageUrl(e.target.value)}
                             style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ddd', marginBottom: '10px', boxSizing: 'border-box' }}
                         />

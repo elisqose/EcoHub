@@ -60,7 +60,7 @@ export default function CommentSection({ post, currentUser }: CommentSectionProp
                                     backgroundColor: '#f9f9f9',
                                     padding: '10px',
                                     borderRadius: '8px',
-                                    border: isModerator && !isAuthor ? '1px solid #ffe0b2' : 'none' // Evidenzia ai mod i commenti altrui
+                                    border: isModerator && !isAuthor ? '1px solid #ffe0b2' : 'none'
                                 }}>
 
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', marginBottom: '4px' }}>

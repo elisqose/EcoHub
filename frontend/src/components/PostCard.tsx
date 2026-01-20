@@ -7,10 +7,9 @@ import SupportButton from './SupportButton';
 interface PostCardProps {
     post: Post;
     showActions?: boolean;
+    isOwnPost?: boolean;
     onApprove?: (id: number) => void;
     onReject?: (id: number) => void;
-
-    isOwnPost?: boolean;
     onDelete?: (id: number) => void;
     onEdit?: (post: Post) => void;
 }

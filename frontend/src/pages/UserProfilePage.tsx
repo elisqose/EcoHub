@@ -337,7 +337,7 @@ export default function UserProfilePage() {
                                         fontSize: '14px'
                                     }}
                                 >
-                                    🛡️ Diventa Moderatore
+                                    👮🏻‍♀️ Diventa Moderatore
                                 </button>
                             ) : (
                                 <div style={{ backgroundColor: '#fff3e0', padding: '15px', borderRadius: '8px', border: '1px solid #ffe0b2', marginTop: '10px' }}>

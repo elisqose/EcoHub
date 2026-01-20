@@ -29,7 +29,7 @@ export default function ModeratorPage() {
     };
 
     const handleApprove = async (id: number) => {
-        if (!confirm('Sei sicuro di voler approvare questo post?')) return;
+        if (!confirm('Sei sicuro di voler APPROVARE questo post?')) return;
         try {
             await api.approvePost(id);
             loadPending();
@@ -80,7 +80,7 @@ export default function ModeratorPage() {
         <div style={{ minHeight: '100vh', backgroundColor: '#fff3e0' }}>
             <Navbar user={user} />
             <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-                <h1 style={{ color: '#e65100' }}>🛡️ Dashboard Moderazione</h1>
+                <h1 style={{ color: '#e65100' }}> 👮🏻‍♀️ Dashboard Moderazione</h1>
                 <p>Ci sono {pendingPosts.length} post in attesa di approvazione.</p>
 
                 <div style={{ marginTop: '20px' }}>
@@ -99,7 +99,7 @@ export default function ModeratorPage() {
                                 <div style={{
                                     backgroundColor: 'white',
                                     padding: '10px 20px',
-                                    marginTop: '-20px', // Attacca visivamente alla card sopra
+                                    marginTop: '-20px',
                                     borderBottomLeftRadius: '8px',
                                     borderBottomRightRadius: '8px',
                                     borderTop: '1px solid #eee',

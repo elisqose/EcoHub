@@ -69,7 +69,7 @@ export default function Navbar({ user }: NavbarProps) {
                             border: '1px solid transparent',
                         }}
                     >
-                        🛡️ Moderazione
+                        👮🏻‍♀️ Moderazione
                     </button>
                 )}
             </div>
@@ -93,7 +93,7 @@ export default function Navbar({ user }: NavbarProps) {
                             border: '1px solid transparent',
                         }}
                     >
-                        🛡️ Mod
+                        👮🏻‍♀️ Mod
                     </button>
                 )}
 
