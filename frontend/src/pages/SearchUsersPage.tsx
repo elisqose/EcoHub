@@ -61,7 +61,7 @@ export default function SearchUsersPage() {
                     <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px' }}>
                         <input
                             type="text"
-                            placeholder="Cerca per username o email..."
+                            placeholder="Cerca per username..."
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             style={{ flex: 1, padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '16px' }}
